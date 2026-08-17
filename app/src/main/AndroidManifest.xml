@@ -1,14 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
+
     <uses-permission android:name="android.permission.BODY_SENSORS" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_HEALTH" /> <!-- Android 14 이상 타겟 시 -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_HEALTH" />
+
+    <!-- ✨ 1. 추가된 권한: 백그라운드 위치 추적용 타입 선언 및 알림(Notification) 띄우기 -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_LOCATION" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="android.permission.INTERNET"/>
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
-    <uses-permission android:name="android.permission.INTERNET" />
 
     <application
         android:allowBackup="true"
@@ -24,7 +29,13 @@
             android:name="com.google.android.geo.API_KEY"
             android:value="AIzaSyDiVh54ynF-6yBE3Ie7M6b41B9OkY_0EPg" />
 
-        <!-- ✨ 2. 앱의 첫 시작 화면을 LoginActivity로 확정 -->
+        <!-- ✨ 2. 새로 만들 백그라운드 일꾼(Service)을 시스템에 정식 등록! -->
+        <!-- 타입을 "location"으로 명시해야 안드로이드가 화면이 꺼져도 GPS를 안 죽입니다. -->
+        <service
+            android:name=".running.RunningService"
+            android:foregroundServiceType="location"
+            android:exported="false" />
+
         <activity
             android:name=".auth.LoginActivity"
             android:exported="true">
@@ -34,7 +45,6 @@
             </intent-filter>
         </activity>
 
-        <!-- ✨ 3. SignUpActivity의 중복 시작 옵션을 지우고 일반 화면으로 변경 -->
         <activity
             android:name=".auth.SignUpActivity"
             android:exported="false" />
@@ -42,14 +52,12 @@
         <activity android:name=".auth.BasicInfoActivity" />
         <activity android:name=".auth.InjuryInfoActivity" />
 
-        <!-- 메인 및 러닝 흐름 -->
         <activity android:name=".main.MainPageActivity" />
         <activity android:name=".main.DailyCheckActivity" />
         <activity android:name=".running.RunningActivity" />
         <activity android:name=".running.RunCompleteActivity" />
         <activity android:name=".running.ReportActivity" />
 
-        <!-- 기타 탭 및 설정 -->
         <activity android:name=".course.CourseActivity" />
         <activity android:name=".mypage.MyPageActivity" />
         <activity android:name=".mypage.EditProfileActivity" />

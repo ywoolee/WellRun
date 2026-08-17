@@ -24,6 +24,9 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
+// ✨ 에러 해결 핵심: ReportActivity에서도 읽을 수 있도록 Split 데이터 구조를 선언해 줍니다.
+data class Split(val km: String, val pace: String, val hr: Int)
+
 class ReportActivity : AppCompatActivity(), OnMapReadyCallback {
 
     private lateinit var mMap: GoogleMap
@@ -53,6 +56,8 @@ class ReportActivity : AppCompatActivity(), OnMapReadyCallback {
             findViewById<TextView>(R.id.tv_report_distance).text = String.format("%.2f km", record.distance)
             findViewById<TextView>(R.id.tv_report_pace).text = "${record.averagePace}/km"
             findViewById<TextView>(R.id.tv_report_hr).text = "${record.averageHeartRate} bpm"
+            findViewById<TextView>(R.id.tv_report_elevation)?.text = String.format("+%.0f m", record.totalElevation)
+            findViewById<TextView>(R.id.tv_report_cadence)?.text = "${record.averageCadence} spm"
 
             // 시간 변환 (초 -> MM:SS 형식)
             val m = record.durationSeconds / 60
@@ -85,7 +90,7 @@ class ReportActivity : AppCompatActivity(), OnMapReadyCallback {
 
                     // 1) 구간 (km) 텍스트
                     val tvKm = createTableTextView("${split.km} km", true, "#FFFFFF")
-                    // 2) 페이스 텍스트 (예: 3km 구간에서 가장 빠르면 주황색으로 강조 등 커스텀 가능)
+                    // 2) 페이스 텍스트
                     val tvPace = createTableTextView(split.pace, false, "#FFFFFF")
                     // 3) 심박수 텍스트
                     val tvHr = createTableTextView("${split.hr} bpm", false, "#FFFFFF")
