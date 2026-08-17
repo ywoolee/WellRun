@@ -62,20 +62,26 @@ class HeartRateService : Service() {
 
     private val stepListener = object : SensorEventListener {
         override fun onSensorChanged(event: SensorEvent) {
-            val now = SystemClock.elapsedRealtime()
+            // ✨ 1. 폰/워치의 시스템 수신 시간이 아닌, 센서 고유의 하드웨어 감지 시간 사용
+            val now = event.timestamp / 1_000_000L
 
             synchronized(stepTimestamps) {
                 stepTimestamps.addLast(now)
 
+                // 8초가 지난 오래된 데이터 비우기
                 while (stepTimestamps.isNotEmpty() && now - stepTimestamps.peekFirst() > cadenceWindowMs) {
                     stepTimestamps.removeFirst()
                 }
 
                 if (stepTimestamps.size >= 2) {
                     val elapsedMs = now - stepTimestamps.peekFirst()
-                    if (elapsedMs > 0) {
+
+                    // ✨ 2. 데이터가 한 번에 뭉쳐서 들어와 시간차(elapsedMs)가 너무 짧은 경우 계산 보류
+                    if (elapsedMs > 2000L) {
                         val cadence = (stepTimestamps.size * 60_000L / elapsedMs).toInt()
-                        if (cadence > 0) {
+
+                        // ✨ 3. 상식적인 인간의 케이던스 범위(40 ~ 300 SPM) 내의 데이터만 수집
+                        if (cadence in 40..300) {
                             synchronized(cadenceListForUi) { cadenceListForUi.add(cadence) }
                             synchronized(cadenceListForMobile) { cadenceListForMobile.add(cadence) }
                         }
