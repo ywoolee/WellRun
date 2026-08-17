@@ -1,0 +1,417 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#0D0D0D">
+
+    <!-- 스크롤 가능한 메인 컨텐츠 영역 -->
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_above="@id/bottom_fixed_area"
+        android:scrollbars="none">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingBottom="24dp">
+
+            <!-- 1. 헤더 영역 -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="#111111"
+                android:orientation="vertical"
+                android:paddingHorizontal="20dp"
+                android:paddingTop="48dp"
+                android:paddingBottom="20dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="코스 추천"
+                    android:textColor="#FF6B35"
+                    android:textSize="12sp"
+                    android:layout_marginBottom="4dp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="나만의 경로 생성"
+                    android:textColor="#FFFFFF"
+                    android:textSize="20sp"
+                    android:textStyle="bold" />
+            </LinearLayout>
+
+            <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#1E1E1E"/>
+
+            <!-- 2. 입력 폼 영역 -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="20dp">
+
+                <!-- (1) 출발지 / 목적지 카드 -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/bg_card_dark"
+                    android:orientation="vertical"
+                    android:padding="20dp"
+                    android:layout_marginBottom="16dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="출발지 · 목적지"
+                        android:textColor="#FFFFFF"
+                        android:textSize="14sp"
+                        android:textStyle="bold"
+                        android:layout_marginBottom="12dp" />
+
+                    <!-- 출발지 -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
+
+                        <FrameLayout
+                            android:layout_width="36dp"
+                            android:layout_height="36dp"
+                            android:background="@drawable/bg_circle_blue_trans">
+                            <ImageView android:layout_width="16dp" android:layout_height="16dp" android:layout_gravity="center" android:src="@android:drawable/ic_menu_mylocation" app:tint="#4A90E2" />
+                        </FrameLayout>
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="12dp"
+                            android:orientation="vertical">
+                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="출발지" android:textColor="#555555" android:textSize="12sp" android:layout_marginBottom="2dp"/>
+                            <EditText
+                                android:id="@+id/et_departure"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:background="@null"
+                                android:hint="출발 위치를 입력하세요"
+                                android:textColorHint="#555555"
+                                android:textColor="#FFFFFF"
+                                android:textSize="14sp"
+                                android:inputType="text" />
+                        </LinearLayout>
+                    </LinearLayout>
+
+                    <!-- 연결선 -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:layout_marginVertical="8dp">
+                        <View android:layout_width="1dp" android:layout_height="24dp" android:background="#2E2E2E" android:layout_marginStart="18dp" />
+                        <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#2A2A2A" android:layout_marginStart="30dp" />
+                    </LinearLayout>
+
+                    <!-- 목적지 -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
+
+                        <FrameLayout
+                            android:layout_width="36dp"
+                            android:layout_height="36dp"
+                            android:background="@drawable/bg_circle_orange_trans">
+                            <ImageView android:layout_width="16dp" android:layout_height="16dp" android:layout_gravity="center" android:src="@android:drawable/ic_menu_compass" app:tint="#FF6B35" />
+                        </FrameLayout>
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="12dp"
+                            android:orientation="vertical">
+                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="목적지" android:textColor="#555555" android:textSize="12sp" android:layout_marginBottom="2dp"/>
+                            <EditText
+                                android:id="@+id/et_destination"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:background="@null"
+                                android:hint="도착 위치를 입력하세요"
+                                android:textColorHint="#555555"
+                                android:textColor="#FFFFFF"
+                                android:textSize="14sp"
+                                android:inputType="text" />
+                        </LinearLayout>
+                    </LinearLayout>
+                </LinearLayout>
+
+                <!-- (2) 경사도 카드 -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/bg_card_dark"
+                    android:orientation="vertical"
+                    android:padding="20dp"
+                    android:layout_marginBottom="16dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="경사도"
+                        android:textColor="#FFFFFF"
+                        android:textSize="14sp"
+                        android:textStyle="bold"
+                        android:layout_marginBottom="12dp" />
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:weightSum="2">
+
+                        <!-- 평지 버튼 (기본 선택된 상태) -->
+                        <LinearLayout
+                            android:id="@+id/btn_slope_flat"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:layout_marginEnd="6dp"
+                            android:background="@drawable/bg_toggle_selected"
+                            android:gravity="center"
+                            android:orientation="vertical"
+                            android:paddingVertical="16dp">
+                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="🏃" android:textSize="22sp" android:layout_marginBottom="4dp"/>
+                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="평지" android:textColor="#FF6B35" android:textSize="14sp" android:textStyle="bold"/>
+                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="평탄한 코스" android:textColor="#555555" android:textSize="12sp" />
+                        </LinearLayout>
+
+                        <!-- 오르막 포함 버튼 -->
+                        <LinearLayout
+                            android:id="@+id/btn_slope_hilly"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:layout_marginStart="6dp"
+                            android:background="@drawable/bg_toggle_unselected"
+                            android:gravity="center"
+                            android:orientation="vertical"
+                            android:paddingVertical="16dp">
+                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="⛰️" android:textSize="22sp" android:layout_marginBottom="4dp"/>
+                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="있음" android:textColor="#AAAAAA" android:textSize="14sp" android:textStyle="bold"/>
+                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="오르막 포함" android:textColor="#555555" android:textSize="12sp" />
+                        </LinearLayout>
+                    </LinearLayout>
+                </LinearLayout>
+
+                <!-- (3) 원하는 거리 카드 -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/bg_card_dark"
+                    android:orientation="vertical"
+                    android:padding="20dp"
+                    android:layout_marginBottom="16dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="원하는 거리"
+                        android:textColor="#FFFFFF"
+                        android:textSize="14sp"
+                        android:textStyle="bold"
+                        android:layout_marginBottom="12dp" />
+
+                    <!-- 직접 입력 폼 -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="50dp"
+                        android:background="@drawable/bg_input_field"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal"
+                        android:paddingHorizontal="16dp"
+                        android:layout_marginBottom="12dp">
+
+                        <ImageView android:layout_width="16dp" android:layout_height="16dp" android:src="@android:drawable/ic_menu_directions" app:tint="#555555" android:layout_marginEnd="12dp"/>
+                        <EditText
+                            android:id="@+id/et_target_distance"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:background="@null"
+                            android:hint="5"
+                            android:textColorHint="#FFFFFF"
+                            android:textColor="#FFFFFF"
+                            android:textSize="14sp"
+                            android:inputType="numberDecimal" />
+                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="km" android:textColor="#555555" android:textSize="14sp"/>
+                    </LinearLayout>
+
+                    <!-- 빠른 선택 (Quick select) -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:weightSum="4">
+                        <androidx.appcompat.widget.AppCompatButton
+                            android:id="@+id/btn_dist_3"
+                            android:layout_width="0dp"
+                            android:layout_height="40dp"
+                            android:layout_weight="1"
+                            android:layout_marginEnd="4dp"
+                            android:background="@drawable/bg_toggle_unselected"
+                            android:text="3km"
+                            android:textColor="#666666"
+                            android:textSize="12sp"
+                            android:textAllCaps="false"/>
+
+                        <!-- 5km 기본 선택 상태 적용 -->
+                        <androidx.appcompat.widget.AppCompatButton
+                            android:id="@+id/btn_dist_5"
+                            android:layout_width="0dp"
+                            android:layout_height="40dp"
+                            android:layout_weight="1"
+                            android:layout_marginHorizontal="2dp"
+                            android:background="@drawable/bg_toggle_selected"
+                            android:text="5km"
+                            android:textColor="#FF6B35"
+                            android:textSize="12sp"
+                            android:textAllCaps="false"/>
+
+                        <androidx.appcompat.widget.AppCompatButton
+                            android:id="@+id/btn_dist_10"
+                            android:layout_width="0dp"
+                            android:layout_height="40dp"
+                            android:layout_weight="1"
+                            android:layout_marginHorizontal="2dp"
+                            android:background="@drawable/bg_toggle_unselected"
+                            android:text="10km"
+                            android:textColor="#666666"
+                            android:textSize="12sp"
+                            android:textAllCaps="false"/>
+
+                        <androidx.appcompat.widget.AppCompatButton
+                            android:id="@+id/btn_dist_21"
+                            android:layout_width="0dp"
+                            android:layout_height="40dp"
+                            android:layout_weight="1"
+                            android:layout_marginStart="4dp"
+                            android:background="@drawable/bg_toggle_unselected"
+                            android:text="21km"
+                            android:textColor="#666666"
+                            android:textSize="12sp"
+                            android:textAllCaps="false"/>
+                    </LinearLayout>
+
+
+
+
+                </LinearLayout>
+
+            </LinearLayout>
+        </LinearLayout>
+    </ScrollView>
+
+    <!-- 하단 고정 영역 (버튼 및 하단 탭 바) -->
+    <LinearLayout
+        android:id="@+id/bottom_fixed_area"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_marginBottom="48dp"
+        android:orientation="vertical"
+        android:background="#0D0D0D">
+
+        <!-- 경로 생성 버튼 -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingHorizontal="20dp"
+            android:paddingTop="16dp"
+            android:paddingBottom="16dp"
+            android:background="#0D0D0D">
+
+            <androidx.appcompat.widget.AppCompatButton
+                android:id="@+id/btn_generate_course"
+                android:layout_width="match_parent"
+                android:layout_height="56dp"
+                android:background="@drawable/bg_orange_gradient"
+                android:text="경로 생성"
+                android:textColor="#FFFFFF"
+                android:textSize="16sp"
+                android:textStyle="bold" />
+        </LinearLayout>
+
+        <!-- 네비게이션 탭바 -->
+        <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#1E1E1E"/>
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="64dp"
+            android:orientation="horizontal"
+            android:weightSum="4"
+            android:gravity="center_vertical">
+
+            <!-- 1. 캘린더 탭 -->
+            <TextView
+                android:id="@+id/nav_calendar"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:text="캘린더"
+                android:textColor="#888888"
+                android:gravity="center"
+                android:textSize="12sp"
+                android:clickable="true"
+                android:focusable="true"
+                android:background="?attr/selectableItemBackground" />
+
+            <!-- 2. 러닝 탭 -->
+            <TextView
+                android:id="@+id/nav_running"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:text="러닝"
+                android:textColor="#888888"
+                android:gravity="center"
+                android:textSize="12sp"
+                android:clickable="true"
+                android:focusable="true"
+                android:background="?attr/selectableItemBackground" />
+
+            <!-- 3. 코스 탭 -->
+            <TextView
+                android:id="@+id/nav_course"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:text="코스"
+                android:textColor="#FF6B35"
+                android:gravity="center"
+                android:textSize="12sp"
+                android:clickable="true"
+                android:focusable="true"
+                android:background="?attr/selectableItemBackground" />
+
+            <!-- 4. 마이페이지 탭 -->
+            <TextView
+                android:id="@+id/nav_mypage"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:text="마이페이지"
+                android:textColor="#888888"
+                android:gravity="center"
+                android:textSize="12sp"
+                android:clickable="true"
+                android:focusable="true"
+                android:background="?attr/selectableItemBackground" />
+
+        </LinearLayout>
+    </LinearLayout>
+
+</RelativeLayout>

@@ -1,0 +1,188 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#0D0D0D"
+    android:orientation="vertical">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:paddingHorizontal="16dp"
+        android:paddingTop="48dp"
+        android:paddingBottom="16dp">
+
+        <View
+            android:layout_width="0dp"
+            android:layout_height="6dp"
+            android:layout_weight="1"
+            android:layout_marginEnd="4dp"
+            android:background="@drawable/bg_progress_active" />
+        <View
+            android:layout_width="0dp"
+            android:layout_height="6dp"
+            android:layout_weight="1"
+            android:layout_marginEnd="4dp"
+            android:background="@drawable/bg_progress_active" />
+        <View
+            android:layout_width="0dp"
+            android:layout_height="6dp"
+            android:layout_weight="1"
+            android:background="@drawable/bg_progress_active" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingHorizontal="24dp"
+        android:paddingBottom="16dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="3/3 단계"
+            android:textColor="#FF6B35"
+            android:textSize="12sp" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:text="혹시 최근에 불편하거나\n부상이 있었던 부위가 있나요?"
+            android:textColor="#FFFFFF"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:lineSpacingExtra="4dp" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="선택하신 부상 이력을 기반으로 맞춤 케어 루틴을 제공합니다."
+            android:textColor="#888888"
+            android:textSize="14sp" />
+    </LinearLayout>
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:paddingHorizontal="24dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingBottom="16dp">
+
+            <androidx.appcompat.widget.AppCompatButton
+                android:id="@+id/btn_injury_knee"
+                android:layout_width="match_parent"
+                android:layout_height="56dp"
+                android:layout_marginBottom="12dp"
+                android:background="@drawable/bg_toggle_unselected"
+                android:gravity="start|center_vertical"
+                android:paddingHorizontal="20dp"
+                android:text="무릎 (장경인대염, 관절 통증)"
+                android:textAllCaps="false"
+                android:textColor="#888888" />
+
+            <androidx.appcompat.widget.AppCompatButton
+                android:id="@+id/btn_injury_ankle"
+                android:layout_width="match_parent"
+                android:layout_height="56dp"
+                android:layout_marginBottom="12dp"
+                android:background="@drawable/bg_toggle_unselected"
+                android:text="발목 / 아킬레스건"
+                android:textColor="#888888"
+                android:gravity="start|center_vertical"
+                android:paddingHorizontal="20dp"
+                android:textAllCaps="false" />
+
+            <androidx.appcompat.widget.AppCompatButton
+                android:id="@+id/btn_injury_foot"
+                android:layout_width="match_parent"
+                android:layout_height="56dp"
+                android:layout_marginBottom="12dp"
+                android:background="@drawable/bg_toggle_unselected"
+                android:text="발바닥 (족저근막염)"
+                android:textColor="#888888"
+                android:gravity="start|center_vertical"
+                android:paddingHorizontal="20dp"
+                android:textAllCaps="false" />
+
+            <androidx.appcompat.widget.AppCompatButton
+                android:id="@+id/btn_injury_shin"
+                android:layout_width="match_parent"
+                android:layout_height="56dp"
+                android:layout_marginBottom="12dp"
+                android:background="@drawable/bg_toggle_unselected"
+                android:text="정강이 / 종아리 (신스플린트)"
+                android:textColor="#888888"
+                android:gravity="start|center_vertical"
+                android:paddingHorizontal="20dp"
+                android:textAllCaps="false" />
+
+            <androidx.appcompat.widget.AppCompatButton
+                android:id="@+id/btn_injury_back"
+                android:layout_width="match_parent"
+                android:layout_height="56dp"
+                android:layout_marginBottom="12dp"
+                android:background="@drawable/bg_toggle_unselected"
+                android:text="허리 / 골반"
+                android:textColor="#888888"
+                android:gravity="start|center_vertical"
+                android:paddingHorizontal="20dp"
+                android:textAllCaps="false" />
+
+            <!-- ✨ 새로 추가된 기타 버튼 -->
+            <androidx.appcompat.widget.AppCompatButton
+                android:id="@+id/btn_injury_other"
+                android:layout_width="match_parent"
+                android:layout_height="56dp"
+                android:layout_marginBottom="12dp"
+                android:background="@drawable/bg_toggle_unselected"
+                android:text="기타 (직접 입력)"
+                android:textColor="#888888"
+                android:gravity="start|center_vertical"
+                android:paddingHorizontal="20dp"
+                android:textAllCaps="false" />
+
+            <!-- ✨ 기타 선택 시 나타날 입력창 (처음엔 숨김) -->
+            <EditText
+                android:id="@+id/et_injury_other"
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:layout_marginBottom="12dp"
+                android:background="@drawable/bg_input_field"
+                android:hint="부상 부위를 입력해주세요"
+                android:textColorHint="#555555"
+                android:textColor="#FFFFFF"
+                android:paddingHorizontal="16dp"
+                android:inputType="text"
+                android:visibility="gone" />
+
+        </LinearLayout>
+    </ScrollView>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="24dp"
+        android:layout_marginBottom="48dp"
+        android:orientation="vertical">
+
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/btn_injury_complete"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:background="@drawable/bg_toggle_unselected"
+            android:text="부상 없음 (건너뛰기)"
+            android:textColor="#FFFFFF"
+            android:textSize="16sp"
+            android:textStyle="bold" />
+    </LinearLayout>
+
+</LinearLayout>

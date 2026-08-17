@@ -1,0 +1,250 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#0A0A0A"
+    android:orientation="vertical">
+
+    <!-- 1. 상단 헤더 영역 (로딩 애니메이션 닷 포함) -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:paddingHorizontal="24dp"
+        android:paddingTop="64dp"
+        android:paddingBottom="32dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="4dp"
+            android:text="오늘의 러닝 완료"
+            android:textColor="#FFFFFF"
+            android:textSize="24sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="러닝 리포트를 생성하고 있습니다"
+            android:textColor="#80FFFFFF"
+            android:textSize="14sp" />
+
+        <!-- 펄스(Pulse) 애니메이션을 위한 3개의 점 -->
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:orientation="horizontal">
+
+            <!-- 코틀린에서 ObjectAnimator를 이용해 깜빡임 효과를 줄 수 있습니다 -->
+            <View android:id="@+id/dot_1" android:layout_width="8dp" android:layout_height="8dp" android:background="@drawable/bg_dot_orange" android:alpha="0.6"/>
+            <View android:id="@+id/dot_2" android:layout_width="8dp" android:layout_height="8dp" android:layout_marginStart="4dp" android:background="@drawable/bg_dot_orange" android:alpha="0.6"/>
+            <View android:id="@+id/dot_3" android:layout_width="8dp" android:layout_height="8dp" android:layout_marginStart="4dp" android:background="@drawable/bg_dot_orange" android:alpha="0.6"/>
+        </LinearLayout>
+    </LinearLayout>
+
+    <!-- 2. 요약 통계 영역 -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="24dp"
+        android:layout_marginBottom="24dp"
+        android:background="@drawable/bg_card_dark"
+        android:orientation="horizontal"
+        android:padding="16dp"
+        android:weightSum="3">
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:orientation="vertical">
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="거리" android:textColor="#66FFFFFF" android:textSize="12sp" android:layout_marginBottom="4dp"/>
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="5.2 km" android:textColor="#FFFFFF" android:textSize="18sp" android:textStyle="bold"/>
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:orientation="vertical">
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="시간" android:textColor="#66FFFFFF" android:textSize="12sp" android:layout_marginBottom="4dp"/>
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="32 분" android:textColor="#FFFFFF" android:textSize="18sp" android:textStyle="bold"/>
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:orientation="vertical">
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="페이스" android:textColor="#66FFFFFF" android:textSize="12sp" android:layout_marginBottom="4dp"/>
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="6:15" android:textColor="#FF6B35" android:textSize="18sp" android:textStyle="bold"/>
+        </LinearLayout>
+    </LinearLayout>
+
+    <!-- 3. 추천 스트레칭 리스트 (스크롤 가능) -->
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:scrollbars="none"
+        android:paddingHorizontal="24dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                android:text="추천 쿨다운 스트레칭"
+                android:textColor="#B3FFFFFF"
+                android:textSize="14sp" />
+
+            <!-- 스트레칭 아이템 1 -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="12dp"
+                android:background="@drawable/bg_card_dark"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:padding="16dp">
+
+                <!-- 이모티콘 대신 들어갈 영상 썸네일 가이드 박스 -->
+                <FrameLayout
+                    android:layout_width="64dp"
+                    android:layout_height="64dp"
+                    android:background="@drawable/bg_thumbnail_dark">
+                    <!-- 향후 썸네일 ImageView가 들어갈 자리 -->
+                    <ImageView
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:layout_gravity="center"
+                        android:src="@android:drawable/ic_menu_gallery"
+                        app:tint="#555555" />
+                </FrameLayout>
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="16dp"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="햄스트링 스트레칭" android:textColor="#FFFFFF" android:textSize="14sp" android:textStyle="normal"/>
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="3분" android:textColor="#66FFFFFF" android:textSize="12sp" android:layout_marginTop="2dp"/>
+                </LinearLayout>
+
+                <ImageButton
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:background="@drawable/bg_circle_gradient"
+                    android:src="@android:drawable/ic_media_play"
+                    app:tint="#FFFFFF"
+                    android:scaleType="centerInside"
+                    android:contentDescription="@null"/>
+
+            </LinearLayout>
+
+            <!-- 스트레칭 아이템 2 -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="12dp"
+                android:background="@drawable/bg_card_dark"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:padding="16dp">
+
+                <FrameLayout
+                    android:layout_width="64dp"
+                    android:layout_height="64dp"
+                    android:background="@drawable/bg_thumbnail_dark">
+                    <ImageView android:layout_width="24dp" android:layout_height="24dp" android:layout_gravity="center" android:src="@android:drawable/ic_menu_gallery" app:tint="#555555" />
+                </FrameLayout>
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="16dp"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="종아리 스트레칭" android:textColor="#FFFFFF" android:textSize="14sp" android:textStyle="normal"/>
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="2분" android:textColor="#66FFFFFF" android:textSize="12sp" android:layout_marginTop="2dp"/>
+                </LinearLayout>
+
+                <ImageButton
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:background="@drawable/bg_circle_gradient"
+                    android:src="@android:drawable/ic_media_play"
+                    app:tint="#FFFFFF"
+                    android:scaleType="centerInside"
+                    android:contentDescription="@null" />
+            </LinearLayout>
+
+            <!-- 스트레칭 아이템 3 -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/bg_card_dark"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:padding="16dp">
+
+                <FrameLayout
+                    android:layout_width="64dp"
+                    android:layout_height="64dp"
+                    android:background="@drawable/bg_thumbnail_dark">
+                    <ImageView android:layout_width="24dp" android:layout_height="24dp" android:layout_gravity="center" android:src="@android:drawable/ic_menu_gallery" app:tint="#555555" />
+                </FrameLayout>
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="16dp"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="고관절 풀기" android:textColor="#FFFFFF" android:textSize="14sp" android:textStyle="normal"/>
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="4분" android:textColor="#66FFFFFF" android:textSize="12sp" android:layout_marginTop="2dp"/>
+                </LinearLayout>
+
+                <ImageButton
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:background="@drawable/bg_circle_gradient"
+                    android:contentDescription="@null"
+                    android:src="@android:drawable/ic_media_play"
+                    app:tint="#FFFFFF"
+                    android:scaleType="centerInside" />
+            </LinearLayout>
+        </LinearLayout>
+    </ScrollView>
+
+    <!-- 4. 하단 건너뛰기 버튼 -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="28dp"
+        android:padding="24dp">
+
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/btn_skip"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:background="@drawable/bg_btn_outline"
+            android:text="건너뛰기"
+            android:textColor="#80FFFFFF"
+            android:textSize="16sp"
+            android:textStyle="bold" />
+    </LinearLayout>
+
+</LinearLayout>

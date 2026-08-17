@@ -1,0 +1,278 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#0A0A0A"
+    android:orientation="vertical">
+
+    <!-- 1. 헤더 영역 -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:paddingHorizontal="20dp"
+        android:paddingTop="48dp"
+        android:paddingBottom="20dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="러닝 리포트"
+            android:textColor="#FFFFFF"
+            android:textSize="18sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/tv_report_date"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:text="----년 --월 --일"
+            android:textColor="#66FFFFFF"
+            android:textSize="12sp" />
+    </LinearLayout>
+
+    <!-- 2. 스크롤 가능한 본문 영역 -->
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:scrollbars="none">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingBottom="24dp">
+
+            <!-- ✨ 구글맵 (Map) 영역 -->
+            <com.example.wellrun.running.MapWrapperLayout
+                android:layout_width="match_parent"
+                android:layout_height="200dp"
+                android:layout_marginHorizontal="20dp"
+                android:layout_marginBottom="16dp">
+
+                <androidx.fragment.app.FragmentContainerView
+                    android:id="@+id/map_report_container"
+                    android:name="com.google.android.gms.maps.SupportMapFragment"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent" />
+
+            </com.example.wellrun.running.MapWrapperLayout>
+
+            <!-- AI 분석 결과 영역 -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="20dp"
+                android:layout_marginBottom="16dp"
+                android:background="@drawable/bg_card_dark"
+                android:orientation="vertical"
+                android:padding="16dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="12dp"
+                    android:text="분석 결과"
+                    android:textColor="#B3FFFFFF"
+                    android:textSize="14sp"
+                    android:textStyle="bold" />
+
+                <!-- 분석 항목 1 -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:layout_marginBottom="8dp">
+
+                    <View
+                        android:layout_width="8dp"
+                        android:layout_height="8dp"
+                        android:background="#FF6B35" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="8dp"
+                        android:text="오늘 페이스가 지난주 대비 5% 향상됐어요! 🎉"
+                        android:textColor="#99FFFFFF"
+                        android:textSize="12sp" />
+                </LinearLayout>
+
+                <!-- 분석 항목 2 -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <View
+                        android:layout_width="8dp"
+                        android:layout_height="8dp"
+                        android:background="#4A90E2" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="8dp"
+                        android:text="심박수 존 2 구간에서 안정적으로 유지됐습니다"
+                        android:textColor="#99FFFFFF"
+                        android:textSize="12sp" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <!-- 상세 통계 그리드 (✨ ID 추가됨) -->
+            <GridLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="14dp"
+                android:columnCount="2"
+                android:rowCount="3">
+
+                <!-- 거리 -->
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_columnWeight="1"
+                    android:layout_margin="6dp"
+                    android:background="@drawable/bg_card_dark"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="거리" android:textColor="#66FFFFFF" android:textSize="12sp" android:layout_marginBottom="4dp"/>
+                    <TextView android:id="@+id/tv_report_distance" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="--km" android:textColor="#FF6B35" android:textSize="16sp" android:textStyle="bold"/>
+                </LinearLayout>
+
+                <!-- 시간 -->
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_columnWeight="1"
+                    android:layout_margin="6dp"
+                    android:background="@drawable/bg_card_dark"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="시간" android:textColor="#66FFFFFF" android:textSize="12sp" android:layout_marginBottom="4dp"/>
+                    <TextView android:id="@+id/tv_report_duration" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="--:--" android:textColor="#FFFFFF" android:textSize="16sp" android:textStyle="bold"/>
+                </LinearLayout>
+
+                <!-- 평균 페이스 -->
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_columnWeight="1"
+                    android:layout_margin="6dp"
+                    android:background="@drawable/bg_card_dark"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="평균 페이스" android:textColor="#66FFFFFF" android:textSize="12sp" android:layout_marginBottom="4dp"/>
+                    <TextView android:id="@+id/tv_report_pace" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="-'--&quot;/km" android:textColor="#FF6B35" android:textSize="16sp" android:textStyle="bold"/>
+                </LinearLayout>
+
+                <!-- 평균 심박수 -->
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_columnWeight="1"
+                    android:layout_margin="6dp"
+                    android:background="@drawable/bg_card_dark"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="평균 심박수" android:textColor="#66FFFFFF" android:textSize="12sp" android:layout_marginBottom="4dp"/>
+                    <TextView android:id="@+id/tv_report_hr" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="--bpm" android:textColor="#FFFFFF" android:textSize="16sp" android:textStyle="bold"/>
+                </LinearLayout>
+
+                <!-- 고도 -->
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_columnWeight="1"
+                    android:layout_margin="6dp"
+                    android:background="@drawable/bg_card_dark"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="고도" android:textColor="#66FFFFFF" android:textSize="12sp" android:layout_marginBottom="4dp"/>
+                    <TextView android:id="@+id/tv_report_elevation" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="+--m" android:textColor="#FF6B35" android:textSize="16sp" android:textStyle="bold"/>
+                </LinearLayout>
+
+                <!-- 케이던스 -->
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_columnWeight="1"
+                    android:layout_margin="6dp"
+                    android:background="@drawable/bg_card_dark"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="케이던스" android:textColor="#66FFFFFF" android:textSize="12sp" android:layout_marginBottom="4dp"/>
+                    <TextView android:id="@+id/tv_report_cadence" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="--spm" android:textColor="#FFFFFF" android:textSize="16sp" android:textStyle="bold"/>
+                </LinearLayout>
+            </GridLayout>
+
+            <!-- ✨ 더미 데이터 삭제됨: ReportActivity에서 자동으로 줄을 추가해 줍니다! -->
+            <LinearLayout
+                android:id="@+id/ll_split_table_container"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="20dp"
+                android:layout_marginTop="8dp"
+                android:background="@drawable/bg_card_dark"
+                android:orientation="vertical"
+                android:padding="16dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="16dp"
+                    android:text="구간별 상세 기록"
+                    android:textColor="#B3FFFFFF"
+                    android:textSize="14sp"
+                    android:textStyle="bold" />
+
+                <!-- 표 헤더 (구간 / 페이스 / 심박수) -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:paddingBottom="8dp">
+                    <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="구간" android:textColor="#66FFFFFF" android:textSize="12sp" android:gravity="center"/>
+                    <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="페이스" android:textColor="#66FFFFFF" android:textSize="12sp" android:gravity="center"/>
+                    <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="심박수" android:textColor="#66FFFFFF" android:textSize="12sp" android:gravity="center"/>
+                </LinearLayout>
+
+                <!-- 헤더 밑 구분선 -->
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:background="#33FFFFFF"
+                    android:layout_marginBottom="8dp"/>
+
+                <!-- 이 아래에 있던 더미 데이터들(1km~5km)은 삭제했습니다! -->
+            </LinearLayout>
+        </LinearLayout>
+    </ScrollView>
+
+    <!-- 3. 하단 메인으로 가기 버튼 -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="48dp"
+        android:paddingHorizontal="20dp"
+        android:paddingVertical="16dp"
+        android:background="#0A0A0A">
+
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/report_btn_go_main"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:background="@drawable/bg_orange_gradient"
+            android:text="메인으로 가기"
+            android:textColor="#FFFFFF"
+            android:textSize="16sp"
+            android:textStyle="bold" />
+    </LinearLayout>
+
+</LinearLayout>
