@@ -106,6 +106,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
+
         lifecycle.addObserver(ambientObserver)
 
         layoutLoading = findViewById(R.id.layout_loading)
@@ -160,13 +161,28 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun checkPermissions() {
-        val bodySensors = ContextCompat.checkSelfPermission(this, Manifest.permission.BODY_SENSORS)
-        val activityRecognition = ContextCompat.checkSelfPermission(this, Manifest.permission.ACTIVITY_RECOGNITION)
+        val permissionsToRequest = mutableListOf<String>()
 
-        if (bodySensors != PackageManager.PERMISSION_GRANTED || activityRecognition != PackageManager.PERMISSION_GRANTED) {
-            requestPermissionsLauncher.launch(
-                arrayOf(Manifest.permission.BODY_SENSORS, Manifest.permission.ACTIVITY_RECOGNITION)
-            )
+        // 1. 신체 센서 권한
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.BODY_SENSORS) != PackageManager.PERMISSION_GRANTED) {
+            permissionsToRequest.add(Manifest.permission.BODY_SENSORS)
+        }
+
+        // 2. 활동 인식 권한
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACTIVITY_RECOGNITION) != PackageManager.PERMISSION_GRANTED) {
+            permissionsToRequest.add(Manifest.permission.ACTIVITY_RECOGNITION)
+        }
+
+        // ✨ 3. 대망의 알림 권한! (Wear OS 4 / API 33 이상 필수)
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+                permissionsToRequest.add(Manifest.permission.POST_NOTIFICATIONS)
+            }
+        }
+
+        // 요청할 권한이 하나라도 있다면 팝업 띄우기
+        if (permissionsToRequest.isNotEmpty()) {
+            requestPermissionsLauncher.launch(permissionsToRequest.toTypedArray())
         }
     }
 
