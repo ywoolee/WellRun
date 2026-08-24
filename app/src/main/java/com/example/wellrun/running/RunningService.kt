@@ -44,8 +44,9 @@ class RunningService : Service(), DataClient.OnDataChangedListener, MessageClien
     private var lastBaroAltitude: Float? = null
 
     private var lastValidAltitude: Double = 0.0
-    private var totalElevationGain: Double = 0.0 // ✨ 누적 획득 고도
+    private var totalElevationGain: Double = 0.0
     private var splitElevationGain: Double = 0.0
+    private var altitudeBuffer: Double = 0.0 // ✨ 고도 노이즈 필터링 임시 버퍼
 
     private var isRunning = false
     private var isPaused = false
@@ -62,8 +63,8 @@ class RunningService : Service(), DataClient.OnDataChangedListener, MessageClien
     private var lastSplitTimeMs = 0L
 
     private var currentHr = 0
-    private var currentCadence = 0 // ✨ 현재 케이던스
-    private val cadenceList = mutableListOf<Int>() // ✨ 평균 케이던스 계산용 바구니
+    private var currentCadence = 0
+    private val cadenceList = mutableListOf<Int>()
     private val splitCadenceList = mutableListOf<Int>()
     private var currentPaceString = "-'--\""
 
@@ -79,6 +80,8 @@ class RunningService : Service(), DataClient.OnDataChangedListener, MessageClien
         const val UPDATE_UI_ACTION = "UPDATE_UI_ACTION"
         const val RUN_FINISHED_ACTION = "RUN_FINISHED_ACTION"
     }
+
+    // ✨ 구간(Split) 기록에는 5가지 필수 데이터를 모두 남겨둡니다.
     data class Split(val km: String, val pace: String, val hr: Int, val cadence: Int, val elevation: Int)
 
     private val pressureListener = object : SensorEventListener {
@@ -126,13 +129,10 @@ class RunningService : Service(), DataClient.OnDataChangedListener, MessageClien
     }
 
     private fun createNotification(contentText: String): Notification {
-        // ✨ 1. 알림을 눌렀을 때 띄울 화면(RunningActivity) 설정
         val intent = Intent(this, RunningActivity::class.java).apply {
-            // 이미 켜져 있는 러닝 화면을 그대로 불러오기 위한 설정
             flags = Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_CLEAR_TOP
         }
 
-        // ✨ 2. 인텐트를 PendingIntent로 포장 (안드로이드 12 이상 필수 플래그 IMMUTABLE 추가)
         val pendingIntent = PendingIntent.getActivity(
             this,
             0,
@@ -144,7 +144,7 @@ class RunningService : Service(), DataClient.OnDataChangedListener, MessageClien
             .setContentTitle("WellRun 러닝")
             .setContentText(contentText)
             .setSmallIcon(android.R.drawable.ic_media_play)
-            .setContentIntent(pendingIntent) // ✨ 3. 알림에 클릭 이벤트(PendingIntent) 달아주기!
+            .setContentIntent(pendingIntent)
             .setOngoing(true)
             .build()
     }
@@ -162,6 +162,7 @@ class RunningService : Service(), DataClient.OnDataChangedListener, MessageClien
                     var measuredAlt: Double? = currentBaroAltitude?.toDouble() ?: if (location.hasAltitude()) location.altitude else null
                     if (measuredAlt != null) lastValidAltitude = measuredAlt else measuredAlt = lastValidAltitude
 
+                    // ✨ 실시간 궤적(routeJson)은 가볍게 위도, 경도, 고도만 저장합니다! (심박/케이던스 제외 완료)
                     routeList.add(mapOf("lat" to location.latitude, "lng" to location.longitude, "alt" to measuredAlt))
 
                     if (lastLocation != null) {
@@ -174,10 +175,16 @@ class RunningService : Service(), DataClient.OnDataChangedListener, MessageClien
                             altitudeChange = location.altitude - lastLocation!!.altitude
                         }
 
-                        // ✨ 획득 고도: 오르막(고도가 높아진 경우)일 때만 누적합니다
-                        if (altitudeChange > 0) {
-                            totalElevationGain += altitudeChange
-                            splitElevationGain += altitudeChange
+                        // ✨ 고도 노이즈 필터링 로직 (2m 임계치 유지)
+                        altitudeBuffer += altitudeChange
+
+                        if (altitudeBuffer > 1.5) {
+                            totalElevationGain += altitudeBuffer
+                            splitElevationGain += altitudeBuffer
+                            altitudeBuffer = 0.0
+                        }
+                        else if (altitudeBuffer < -1.5) {
+                            altitudeBuffer = 0.0
                         }
 
                         totalDistanceMeters += sqrt(distance2D.pow(2) + altitudeChange.pow(2)).toFloat()
@@ -202,13 +209,13 @@ class RunningService : Service(), DataClient.OnDataChangedListener, MessageClien
         lastBaroAltitude = null
         currentBaroAltitude = null
 
-        // ✨ 리스트 및 누적 데이터 초기화
         totalElevationGain = 0.0
-        splitElevationGain = 0.0 // ✨ 추가
+        splitElevationGain = 0.0
+        altitudeBuffer = 0.0
         routeList.clear()
         splitsList.clear()
         cadenceList.clear()
-        splitCadenceList.clear() // ✨ 추가
+        splitCadenceList.clear()
         nextSplitKm = 1
         lastSplitTimeMs = 0L
 
@@ -273,10 +280,9 @@ class RunningService : Service(), DataClient.OnDataChangedListener, MessageClien
         if (distanceKm >= nextSplitKm) {
             val splitSec = (totalElapsedMs - lastSplitTimeMs) / 1000
             val splitPaceStr = String.format(Locale.getDefault(), "%d'%02d\"", splitSec / 60, splitSec % 60)
-            // ✨ 구간 평균 케이던스 계산
+
             val splitAvgCadence = if (splitCadenceList.isNotEmpty()) splitCadenceList.average().toInt() else 0
 
-            // ✨ 새로워진 Split 상자에 5가지 데이터 모두 담기
             splitsList.add(Split(nextSplitKm.toString(), splitPaceStr, currentHr, splitAvgCadence, splitElevationGain.toInt()))
             nextSplitKm++
             lastSplitTimeMs = totalElapsedMs
@@ -323,14 +329,12 @@ class RunningService : Service(), DataClient.OnDataChangedListener, MessageClien
             val splitSec = (accumulatedTimeMs - lastSplitTimeMs) / 1000
             val paceSec = if (remainingDist > 0) (splitSec / remainingDist).toInt() else 0
             val paceStr = String.format(Locale.getDefault(), "%d'%02d\"", paceSec / 60, paceSec % 60)
-// ✨ 자투리 구간 평균 케이던스 계산
+
             val splitAvgCadence = if (splitCadenceList.isNotEmpty()) splitCadenceList.average().toInt() else 0
 
             splitsList.add(Split(String.format(Locale.getDefault(), "%.2f", remainingDist), paceStr, currentHr, splitAvgCadence, splitElevationGain.toInt()))
-
         }
 
-        // ✨ 평균 케이던스 계산
         val avgCadence = if (cadenceList.isNotEmpty()) cadenceList.average().toInt() else 0
 
         val resultIntent = Intent(RUN_FINISHED_ACTION).apply {
@@ -339,8 +343,8 @@ class RunningService : Service(), DataClient.OnDataChangedListener, MessageClien
             putExtra("elapsedSeconds", (accumulatedTimeMs / 1000).toInt())
             putExtra("avgPace", currentPaceString)
             putExtra("avgHr", currentHr)
-            putExtra("avgCadence", avgCadence) // ✨ 평균 케이던스 추가
-            putExtra("totalElevation", totalElevationGain) // ✨ 누적 고도 추가
+            putExtra("avgCadence", avgCadence)
+            putExtra("totalElevation", totalElevationGain)
             putExtra("routeJson", Gson().toJson(routeList))
             putExtra("splitsJson", Gson().toJson(splitsList))
         }
@@ -353,7 +357,6 @@ class RunningService : Service(), DataClient.OnDataChangedListener, MessageClien
             if (event.type == DataEvent.TYPE_CHANGED && event.dataItem.uri.path == "/heart_rate") {
                 val dataMap = DataMapItem.fromDataItem(event.dataItem).dataMap
 
-                // ✨ 심박수와 케이던스 데이터를 수신하여 저장
                 currentHr = dataMap.getInt("bpm")
                 currentCadence = dataMap.getInt("cadence")
 
