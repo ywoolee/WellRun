@@ -13,6 +13,8 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+
     <!-- ✨ 3. 안드로이드 14(API 34) 이상 워치에서 센서를 사용하기 위한 health 타입 권한 -->
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_HEALTH" />
 
