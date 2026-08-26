@@ -46,7 +46,7 @@ class RunningService : Service(), DataClient.OnDataChangedListener, MessageClien
     private var lastValidAltitude: Double = 0.0
     private var totalElevationGain: Double = 0.0
     private var splitElevationGain: Double = 0.0
-    private var altitudeBuffer: Double = 0.0 // ✨ 고도 노이즈 필터링 임시 버퍼
+    private var altitudeBuffer: Double = 0.0
 
     private var isRunning = false
     private var isPaused = false
@@ -66,6 +66,11 @@ class RunningService : Service(), DataClient.OnDataChangedListener, MessageClien
     private var currentCadence = 0
     private val cadenceList = mutableListOf<Int>()
     private val splitCadenceList = mutableListOf<Int>()
+
+    // ✨ 심박수 평균을 위한 리스트 추가
+    private val hrList = mutableListOf<Int>()
+    private val splitHrList = mutableListOf<Int>()
+
     private var currentPaceString = "-'--\""
 
     companion object {
@@ -81,7 +86,6 @@ class RunningService : Service(), DataClient.OnDataChangedListener, MessageClien
         const val RUN_FINISHED_ACTION = "RUN_FINISHED_ACTION"
     }
 
-    // ✨ 구간(Split) 기록에는 5가지 필수 데이터를 모두 남겨둡니다.
     data class Split(val km: String, val pace: String, val hr: Int, val cadence: Int, val elevation: Int)
 
     private val pressureListener = object : SensorEventListener {
@@ -162,7 +166,6 @@ class RunningService : Service(), DataClient.OnDataChangedListener, MessageClien
                     var measuredAlt: Double? = currentBaroAltitude?.toDouble() ?: if (location.hasAltitude()) location.altitude else null
                     if (measuredAlt != null) lastValidAltitude = measuredAlt else measuredAlt = lastValidAltitude
 
-                    // ✨ 실시간 궤적(routeJson)은 가볍게 위도, 경도, 고도만 저장합니다! (심박/케이던스 제외 완료)
                     routeList.add(mapOf("lat" to location.latitude, "lng" to location.longitude, "alt" to measuredAlt))
 
                     if (lastLocation != null) {
@@ -175,7 +178,6 @@ class RunningService : Service(), DataClient.OnDataChangedListener, MessageClien
                             altitudeChange = location.altitude - lastLocation!!.altitude
                         }
 
-                        // ✨ 고도 노이즈 필터링 로직 (2m 임계치 유지)
                         altitudeBuffer += altitudeChange
 
                         if (altitudeBuffer > 1.5) {
@@ -214,8 +216,13 @@ class RunningService : Service(), DataClient.OnDataChangedListener, MessageClien
         altitudeBuffer = 0.0
         routeList.clear()
         splitsList.clear()
+
         cadenceList.clear()
         splitCadenceList.clear()
+        // ✨ 시작 시 심박수 리스트 초기화
+        hrList.clear()
+        splitHrList.clear()
+
         nextSplitKm = 1
         lastSplitTimeMs = 0L
 
@@ -282,12 +289,15 @@ class RunningService : Service(), DataClient.OnDataChangedListener, MessageClien
             val splitPaceStr = String.format(Locale.getDefault(), "%d'%02d\"", splitSec / 60, splitSec % 60)
 
             val splitAvgCadence = if (splitCadenceList.isNotEmpty()) splitCadenceList.average().toInt() else 0
+            // ✨ 1km 구간 평균 심박수 적용
+            val splitAvgHr = if (splitHrList.isNotEmpty()) splitHrList.average().toInt() else 0
 
-            splitsList.add(Split(nextSplitKm.toString(), splitPaceStr, currentHr, splitAvgCadence, splitElevationGain.toInt()))
+            splitsList.add(Split(nextSplitKm.toString(), splitPaceStr, splitAvgHr, splitAvgCadence, splitElevationGain.toInt()))
             nextSplitKm++
             lastSplitTimeMs = totalElapsedMs
             splitElevationGain = 0.0
             splitCadenceList.clear()
+            splitHrList.clear() // ✨ 심박수 리스트도 초기화
         }
 
         updateNotification(timeStr, distStr)
@@ -305,7 +315,7 @@ class RunningService : Service(), DataClient.OnDataChangedListener, MessageClien
             putExtra("time", timeStr)
             putExtra("distance", String.format(Locale.getDefault(), "%.2f", distanceKm))
             putExtra("pace", currentPaceString)
-            putExtra("hr", currentHr)
+            putExtra("hr", currentHr) // ✨ UI는 현재 심박수(실시간) 유지
             putExtra("lat", lat)
             putExtra("lng", lng)
         }
@@ -331,18 +341,22 @@ class RunningService : Service(), DataClient.OnDataChangedListener, MessageClien
             val paceStr = String.format(Locale.getDefault(), "%d'%02d\"", paceSec / 60, paceSec % 60)
 
             val splitAvgCadence = if (splitCadenceList.isNotEmpty()) splitCadenceList.average().toInt() else 0
+            // ✨ 짜투리 구간 심박수 평균
+            val splitAvgHr = if (splitHrList.isNotEmpty()) splitHrList.average().toInt() else 0
 
-            splitsList.add(Split(String.format(Locale.getDefault(), "%.2f", remainingDist), paceStr, currentHr, splitAvgCadence, splitElevationGain.toInt()))
+            splitsList.add(Split(String.format(Locale.getDefault(), "%.2f", remainingDist), paceStr, splitAvgHr, splitAvgCadence, splitElevationGain.toInt()))
         }
 
         val avgCadence = if (cadenceList.isNotEmpty()) cadenceList.average().toInt() else 0
+        // ✨ 최종 평균 심박수 계산
+        val avgHr = if (hrList.isNotEmpty()) hrList.average().toInt() else 0
 
         val resultIntent = Intent(RUN_FINISHED_ACTION).apply {
             setPackage(packageName)
             putExtra("distanceKm", distanceKm)
             putExtra("elapsedSeconds", (accumulatedTimeMs / 1000).toInt())
             putExtra("avgPace", currentPaceString)
-            putExtra("avgHr", currentHr)
+            putExtra("avgHr", avgHr) // ✨ currentHr가 아닌 진짜 평균 적용
             putExtra("avgCadence", avgCadence)
             putExtra("totalElevation", totalElevationGain)
             putExtra("routeJson", Gson().toJson(routeList))
@@ -363,6 +377,12 @@ class RunningService : Service(), DataClient.OnDataChangedListener, MessageClien
                 if (currentCadence > 0) {
                     cadenceList.add(currentCadence)
                     splitCadenceList.add(currentCadence)
+                }
+
+                // ✨ 심박수가 정상 범위일 때 리스트에 추가
+                if (currentHr > 0) {
+                    hrList.add(currentHr)
+                    splitHrList.add(currentHr)
                 }
             }
         }

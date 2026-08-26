@@ -11,7 +11,6 @@ import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
 import android.os.IBinder
-import android.os.SystemClock
 import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.health.services.client.HealthServices
@@ -21,9 +20,9 @@ import androidx.health.services.client.data.DataPointContainer
 import androidx.health.services.client.data.DataType
 import androidx.health.services.client.data.DataTypeAvailability
 import androidx.health.services.client.data.DeltaDataType
-import androidx.localbroadcastmanager.content.LocalBroadcastManager // ✨ 추가됨
-import androidx.wear.ongoing.OngoingActivity // ✨ 추가됨: 워치 페이스 복귀 인디케이터
-import androidx.wear.ongoing.Status // ✨ 추가됨
+import androidx.localbroadcastmanager.content.LocalBroadcastManager
+import androidx.wear.ongoing.OngoingActivity
+import androidx.wear.ongoing.Status
 import com.google.android.gms.wearable.PutDataMapRequest
 import com.google.android.gms.wearable.Wearable
 import kotlinx.coroutines.*
@@ -32,9 +31,10 @@ import java.util.ArrayDeque
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.IntentFilter
+import android.os.PowerManager // ✨ WakeLock을 위한 PowerManager 임포트
 
 class HeartRateService : Service() {
-    private var isPaused = false // ✨ 일시정지 상태 플래그
+    private var isPaused = false
 
     private val channelId = "HeartRateChannel"
     private val notificationId = 1
@@ -51,6 +51,10 @@ class HeartRateService : Service() {
     private var stepDetectorSensor: Sensor? = null
     private val stepTimestamps = ArrayDeque<Long>()
     private val cadenceWindowMs = 8000L
+
+    // ✨ 워치 수면 방지를 위한 WakeLock 변수
+    private var wakeLock: PowerManager.WakeLock? = null
+
     private val pauseResumeReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
             when (intent?.action) {
@@ -62,13 +66,11 @@ class HeartRateService : Service() {
 
     private val stepListener = object : SensorEventListener {
         override fun onSensorChanged(event: SensorEvent) {
-            // ✨ 1. 폰/워치의 시스템 수신 시간이 아닌, 센서 고유의 하드웨어 감지 시간 사용
             val now = event.timestamp / 1_000_000L
 
             synchronized(stepTimestamps) {
                 stepTimestamps.addLast(now)
 
-                // 8초가 지난 오래된 데이터 비우기
                 while (stepTimestamps.isNotEmpty() && now - stepTimestamps.peekFirst() > cadenceWindowMs) {
                     stepTimestamps.removeFirst()
                 }
@@ -76,11 +78,10 @@ class HeartRateService : Service() {
                 if (stepTimestamps.size >= 2) {
                     val elapsedMs = now - stepTimestamps.peekFirst()
 
-                    // ✨ 2. 데이터가 한 번에 뭉쳐서 들어와 시간차(elapsedMs)가 너무 짧은 경우 계산 보류
                     if (elapsedMs > 2000L) {
-                        val cadence = (stepTimestamps.size * 60_000L / elapsedMs).toInt()
+                        // ✨ 걸음 '간격'을 계산하기 위해 size - 1 로 수정
+                        val cadence = ((stepTimestamps.size - 1) * 60_000L / elapsedMs).toInt()
 
-                        // ✨ 3. 상식적인 인간의 케이던스 범위(40 ~ 300 SPM) 내의 데이터만 수집
                         if (cadence in 40..300) {
                             synchronized(cadenceListForUi) { cadenceListForUi.add(cadence) }
                             synchronized(cadenceListForMobile) { cadenceListForMobile.add(cadence) }
@@ -111,17 +112,17 @@ class HeartRateService : Service() {
         serviceScope.launch {
             while (isActive) {
                 delay(3000)
-                var averageCadence = 0
+                var currentCadence = 0
                 synchronized(cadenceListForUi) {
                     if (cadenceListForUi.isNotEmpty()) {
-                        averageCadence = cadenceListForUi.average().toInt()
+                        // ✨ 화면 UI에는 평균 대신 가장 최근 측정된 값 표시
+                        currentCadence = cadenceListForUi.last()
                         cadenceListForUi.clear()
                     }
                 }
-                if (averageCadence > 0) {
+                if (currentCadence > 0) {
                     val intent = Intent("com.example.wellrun.CADENCE_UPDATE")
-                    intent.putExtra("cadence", averageCadence)
-                    // ✨ LocalBroadcastManager 적용
+                    intent.putExtra("cadence", currentCadence)
                     LocalBroadcastManager.getInstance(this@HeartRateService).sendBroadcast(intent)
                 }
             }
@@ -134,7 +135,6 @@ class HeartRateService : Service() {
                 Log.d("WellRun", "센서 상태 변경($dataType): $availability")
                 if (availability == DataTypeAvailability.AVAILABLE) {
                     val intent = Intent("com.example.wellrun.SENSOR_READY")
-                    // ✨ LocalBroadcastManager 적용
                     LocalBroadcastManager.getInstance(this@HeartRateService).sendBroadcast(intent)
                     sendReadySignalToMobile()
                 }
@@ -148,7 +148,6 @@ class HeartRateService : Service() {
             if (latestBpm != null && latestBpm > 0) {
                 val intent = Intent("com.example.wellrun.BPM_UPDATE")
                 intent.putExtra("bpm", latestBpm)
-                // ✨ LocalBroadcastManager 적용
                 LocalBroadcastManager.getInstance(this@HeartRateService).sendBroadcast(intent)
 
                 synchronized(bpmList) { bpmList.add(latestBpm) }
@@ -158,6 +157,12 @@ class HeartRateService : Service() {
 
     override fun onCreate() {
         super.onCreate()
+
+        // ✨ WakeLock 획득: 화면이 꺼져도 CPU가 멈추지 않고 걸음 수를 계속 셉니다!
+        val powerManager = getSystemService(PowerManager::class.java)
+        wakeLock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "WellRun:CadenceWakeLock")
+        wakeLock?.acquire()
+
         createNotificationChannel()
         startForeground(notificationId, createNotification("센서 측정 준비 중..."))
 
@@ -176,29 +181,31 @@ class HeartRateService : Service() {
         serviceScope.launch {
             while (isActive) {
                 delay(5000)
-                var averageBpm = 0
-                var averageCadence = 0
+                var latestBpm = 0
+                var latestCadence = 0
 
                 synchronized(bpmList) {
                     if (bpmList.isNotEmpty()) {
-                        averageBpm = bpmList.average().toInt()
+                        // ✨ 평균(average)이 아니라 가장 최신 데이터(last) 추출
+                        latestBpm = bpmList.last()
                         bpmList.clear()
                     }
                 }
 
                 synchronized(cadenceListForMobile) {
                     if (cadenceListForMobile.isNotEmpty()) {
-                        averageCadence = cadenceListForMobile.average().toInt()
+                        // ✨ 평균(average)이 아니라 가장 최신 데이터(last) 추출
+                        latestCadence = cadenceListForMobile.last()
                         cadenceListForMobile.clear()
                     }
                 }
 
-                if (averageBpm > 0 || averageCadence > 0) {
-                    // ✨ 일시정지 상태가 아닐 때만 폰으로 데이터 전송! (핵심)
+                if (latestBpm > 0 || latestCadence > 0) {
                     if (!isPaused) {
-                        sendDataToMobile(averageBpm, averageCadence)
+                        // ✨ 이제 폰으로는 가장 싱싱한 최신값(latest)이 날아갑니다.
+                        sendDataToMobile(latestBpm, latestCadence)
                     }
-                    updateNotification("BPM: $averageBpm | 케이던스: $averageCadence")
+                    updateNotification("BPM: $latestBpm | 케이던스: $latestCadence")
                 }
             }
         }
@@ -206,7 +213,6 @@ class HeartRateService : Service() {
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         val loadingIntent = Intent("com.example.wellrun.SENSOR_ACQUIRING")
-        // ✨ LocalBroadcastManager 적용 완료
         LocalBroadcastManager.getInstance(this).sendBroadcast(loadingIntent)
 
         measureClient.registerMeasureCallback(DataType.HEART_RATE_BPM, measureCallback)
@@ -234,7 +240,6 @@ class HeartRateService : Service() {
         getSystemService(NotificationManager::class.java)?.createNotificationChannel(serviceChannel)
     }
 
-    // ✨ 워치 페이스 인디케이터를 탭하면 MainActivity로 복귀시키는 PendingIntent
     private fun buildReturnToAppIntent(): PendingIntent {
         val intent = Intent(this, MainActivity::class.java).apply {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
@@ -256,8 +261,6 @@ class HeartRateService : Service() {
             .setCategory(NotificationCompat.CATEGORY_WORKOUT)
             .setContentIntent(touchIntent)
 
-        // ✨ Ongoing Activity: 절전 2단계 타임아웃으로 워치 페이스가 뜨더라도
-        // 러닝 세션 인디케이터가 함께 표시되고, 탭하면 바로 이 앱으로 복귀합니다.
         val ongoingActivityStatus = Status.Builder()
             .addTemplate(text)
             .build()
@@ -282,13 +285,16 @@ class HeartRateService : Service() {
 
     override fun onDestroy() {
         super.onDestroy()
+
+        // ✨ 서비스가 끝날 때 반드시 락을 풀어주어 배터리 소모를 막습니다.
+        wakeLock?.release()
+
         measureClient.unregisterMeasureCallbackAsync(DataType.HEART_RATE_BPM, measureCallback)
         stopCadenceSensor()
         serviceJob.cancel()
         LocalBroadcastManager.getInstance(this).unregisterReceiver(pauseResumeReceiver)
 
         val resetIntent = Intent("com.example.wellrun.SENSORS_STOPPED")
-        // ✨ LocalBroadcastManager 적용
         LocalBroadcastManager.getInstance(this).sendBroadcast(resetIntent)
     }
     private fun sendReadySignalToMobile() {
@@ -298,11 +304,9 @@ class HeartRateService : Service() {
                 val nodes = nodeClient.connectedNodes.await()
                 val messageClient = Wearable.getMessageClient(this@HeartRateService)
 
-                // ✨ 현재 워치의 정확한 절대 시간을 바이트로 변환합니다.
                 val watchStartTime = System.currentTimeMillis().toString().toByteArray()
 
                 for (node in nodes) {
-                    // 신호와 함께 시간 데이터(watchStartTime)를 같이 전송합니다.
                     messageClient.sendMessage(node.id, "/sensor_ready", watchStartTime).await()
                 }
                 Log.d("WellRun", "스마트폰으로 /sensor_ready 신호 및 시간 전송 완료!")

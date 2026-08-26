@@ -224,7 +224,18 @@
                         android:textColor="#FFFFFF"
                         android:textSize="14sp"
                         android:textStyle="bold"
-                        android:layout_marginBottom="12dp" />
+                        android:layout_marginBottom="4dp" />
+
+                    <!-- ✨ 여기가 문제의 그 안내 텍스트입니다! ✨ -->
+                    <TextView
+                        android:id="@+id/tv_min_distance_info"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="💡 출발지~목적지까지의 최소거리: 0.0km"
+                        android:textColor="#AAAAAA"
+                        android:textSize="12sp"
+                        android:layout_marginBottom="12dp"
+                        android:visibility="gone"/>
 
                     <!-- 직접 입력 폼 -->
                     <LinearLayout
@@ -233,8 +244,7 @@
                         android:background="@drawable/bg_input_field"
                         android:gravity="center_vertical"
                         android:orientation="horizontal"
-                        android:paddingHorizontal="16dp"
-                        android:layout_marginBottom="12dp">
+                        android:paddingHorizontal="16dp">
 
                         <ImageView android:layout_width="16dp" android:layout_height="16dp" android:src="@android:drawable/ic_menu_directions" app:tint="#555555" android:layout_marginEnd="12dp"/>
                         <EditText
@@ -244,73 +254,15 @@
                             android:layout_weight="1"
                             android:background="@null"
                             android:hint="5"
-                            android:textColorHint="#FFFFFF"
+                            android:textColorHint="#555555"
                             android:textColor="#FFFFFF"
                             android:textSize="14sp"
                             android:inputType="numberDecimal" />
                         <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="km" android:textColor="#555555" android:textSize="14sp"/>
                     </LinearLayout>
-
-                    <!-- 빠른 선택 (Quick select) -->
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:weightSum="4">
-                        <androidx.appcompat.widget.AppCompatButton
-                            android:id="@+id/btn_dist_3"
-                            android:layout_width="0dp"
-                            android:layout_height="40dp"
-                            android:layout_weight="1"
-                            android:layout_marginEnd="4dp"
-                            android:background="@drawable/bg_toggle_unselected"
-                            android:text="3km"
-                            android:textColor="#666666"
-                            android:textSize="12sp"
-                            android:textAllCaps="false"/>
-
-                        <!-- 5km 기본 선택 상태 적용 -->
-                        <androidx.appcompat.widget.AppCompatButton
-                            android:id="@+id/btn_dist_5"
-                            android:layout_width="0dp"
-                            android:layout_height="40dp"
-                            android:layout_weight="1"
-                            android:layout_marginHorizontal="2dp"
-                            android:background="@drawable/bg_toggle_selected"
-                            android:text="5km"
-                            android:textColor="#FF6B35"
-                            android:textSize="12sp"
-                            android:textAllCaps="false"/>
-
-                        <androidx.appcompat.widget.AppCompatButton
-                            android:id="@+id/btn_dist_10"
-                            android:layout_width="0dp"
-                            android:layout_height="40dp"
-                            android:layout_weight="1"
-                            android:layout_marginHorizontal="2dp"
-                            android:background="@drawable/bg_toggle_unselected"
-                            android:text="10km"
-                            android:textColor="#666666"
-                            android:textSize="12sp"
-                            android:textAllCaps="false"/>
-
-                        <androidx.appcompat.widget.AppCompatButton
-                            android:id="@+id/btn_dist_21"
-                            android:layout_width="0dp"
-                            android:layout_height="40dp"
-                            android:layout_weight="1"
-                            android:layout_marginStart="4dp"
-                            android:background="@drawable/bg_toggle_unselected"
-                            android:text="21km"
-                            android:textColor="#666666"
-                            android:textSize="12sp"
-                            android:textAllCaps="false"/>
-                    </LinearLayout>
-
-
-
-
                 </LinearLayout>
+
+
 
             </LinearLayout>
         </LinearLayout>

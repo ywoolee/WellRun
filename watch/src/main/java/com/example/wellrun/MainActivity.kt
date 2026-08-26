@@ -10,9 +10,7 @@ import android.os.Bundle
 import android.view.View
 import android.widget.LinearLayout
 import android.widget.TextView
-import android.widget.Toast
 import androidx.activity.ComponentActivity
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import androidx.wear.ambient.AmbientLifecycleObserver
@@ -81,18 +79,6 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    private val requestPermissionsLauncher = registerForActivityResult(
-        ActivityResultContracts.RequestMultiplePermissions()
-    ) { permissions ->
-        val bodySensorsGranted = permissions[Manifest.permission.BODY_SENSORS] ?: false
-        val activityRecognitionGranted = permissions[Manifest.permission.ACTIVITY_RECOGNITION] ?: false
-
-        if (bodySensorsGranted && activityRecognitionGranted) {
-            Toast.makeText(this, "권한 확인 완료! 스마트폰에서 러닝을 시작해주세요.", Toast.LENGTH_SHORT).show()
-        } else {
-            Toast.makeText(this, "측정을 위해 모든 센서 권한이 필요합니다.", Toast.LENGTH_SHORT).show()
-        }
-    }
 
     private val ambientCallback = object : AmbientLifecycleObserver.AmbientLifecycleCallback {
         override fun onEnterAmbient(ambientDetails: AmbientLifecycleObserver.AmbientDetails) {}
@@ -180,10 +166,6 @@ class MainActivity : ComponentActivity() {
             }
         }
 
-        // 요청할 권한이 하나라도 있다면 팝업 띄우기
-        if (permissionsToRequest.isNotEmpty()) {
-            requestPermissionsLauncher.launch(permissionsToRequest.toTypedArray())
-        }
     }
 
     companion object {
