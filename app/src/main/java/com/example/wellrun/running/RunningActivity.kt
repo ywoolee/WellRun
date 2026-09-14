@@ -6,6 +6,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.content.pm.PackageManager
+import android.graphics.Color
 import android.os.Build
 import android.os.Bundle
 import android.view.MotionEvent
@@ -22,13 +23,17 @@ import com.example.wellrun.auth.SessionManager
 import com.example.wellrun.main.MainPageActivity
 import com.example.wellrun.model.RunningRecord
 import com.example.wellrun.network.RetrofitClient
+import com.example.wellrun.network.RouteNode
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.maps.model.LatLngBounds
+import com.google.android.gms.maps.model.PolylineOptions
 import com.google.android.gms.wearable.Wearable
 import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -47,19 +52,15 @@ class RunningActivity : AppCompatActivity(), OnMapReadyCallback {
 
     private var isPaused = false
     private val PERMISSION_REQUEST_CODE = 1000
+    private var coursePath: List<RouteNode>? = null // ✨ 코스 데이터를 담을 변수
 
-    // ✨ 서비스에서 1초마다, 혹은 러닝 종료 시 던져주는 데이터를 받아먹는 입(Receiver)
-// ✨ 서비스에서 데이터를 받아먹는 입(Receiver)
     private val serviceReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
             when (intent?.action) {
                 RunningService.UPDATE_UI_ACTION -> {
-
-                    // 심박수를 먼저 꺼냅니다. (기본값은 0)
                     val currentHr = intent.getIntExtra("hr", 0)
                     tvRunHeartRate.text = currentHr.toString()
 
-                    // 🏃‍♂️💨 [유저 인사이트 반영!] 심박수 데이터가 들어오기 시작하면 UI 즉시 전환!
                     if (currentHr > 0 && btnStartRun.visibility == View.VISIBLE) {
                         Toast.makeText(this@RunningActivity, "워치 심박수 수신 완료! 러닝을 시작합니다.", Toast.LENGTH_SHORT).show()
                         btnStartRun.visibility = View.GONE
@@ -68,15 +69,14 @@ class RunningActivity : AppCompatActivity(), OnMapReadyCallback {
                         btnBack.alpha = 0.3f
                     }
 
-                    // 나머지 데이터 업데이트
                     tvRunTime.text = intent.getStringExtra("time") ?: "00:00:00"
                     tvRunDistance.text = intent.getStringExtra("distance") ?: "0.00"
                     tvRunPace.text = intent.getStringExtra("pace") ?: "-'--\""
 
-                    // 지도 이동
                     val lat = intent.getDoubleExtra("lat", 0.0)
                     val lng = intent.getDoubleExtra("lng", 0.0)
                     if (lat != 0.0 && lng != 0.0 && ::mMap.isInitialized) {
+                        // 사용자의 현재 위치로 자연스럽게 이동
                         if (mMap.cameraPosition.zoom < 10f) {
                             mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(LatLng(lat, lng), 16f))
                         } else {
@@ -85,7 +85,7 @@ class RunningActivity : AppCompatActivity(), OnMapReadyCallback {
                     }
                 }
                 RunningService.RUN_FINISHED_ACTION -> {
-                    saveRunDataToServer(intent) // 최종 데이터 뭉치를 받아서 서버로 슛!
+                    saveRunDataToServer(intent)
                 }
             }
         }
@@ -96,6 +96,13 @@ class RunningActivity : AppCompatActivity(), OnMapReadyCallback {
         setContentView(R.layout.running)
 
         checkPermissions()
+
+        // ✨ 1. CourseActivity에서 넘겨준 코스 데이터 수신 및 파싱
+        val pathJson = intent.getStringExtra("COURSE_PATH")
+        if (pathJson != null) {
+            val type = object : TypeToken<List<RouteNode>>() {}.type
+            coursePath = Gson().fromJson(pathJson, type)
+        }
 
         val mapFragment = supportFragmentManager.findFragmentById(R.id.map_container) as SupportMapFragment
         mapFragment.getMapAsync(this)
@@ -121,7 +128,6 @@ class RunningActivity : AppCompatActivity(), OnMapReadyCallback {
                     nodes.forEach { node -> Wearable.getMessageClient(this).sendMessage(node.id, "/start_hr", byteArrayOf()) }
 
                     val serviceIntent = Intent(this, RunningService::class.java).apply { action = RunningService.ACTION_START }
-
                     startForegroundService(serviceIntent)
                 }
             }
@@ -151,7 +157,7 @@ class RunningActivity : AppCompatActivity(), OnMapReadyCallback {
         val btnStopRun = findViewById<ImageButton>(R.id.btn_stop_run)
         val stopRunnable = Runnable {
             val serviceIntent = Intent(this, RunningService::class.java).apply { action = RunningService.ACTION_STOP }
-            startService(serviceIntent) // 서비스 종료 신호를 보내면, 서비스가 계산 후 RUN_FINISHED_ACTION을 날려줌
+            startService(serviceIntent)
         }
 
         btnStopRun.setOnTouchListener { view, event ->
@@ -178,8 +184,8 @@ class RunningActivity : AppCompatActivity(), OnMapReadyCallback {
             durationSeconds = intent.getIntExtra("elapsedSeconds", 0),
             averagePace = intent.getStringExtra("avgPace") ?: "-'--\"",
             averageHeartRate = intent.getIntExtra("avgHr", 0),
-            averageCadence = intent.getIntExtra("avgCadence", 0), // ✨ 추가
-            totalElevation = intent.getDoubleExtra("totalElevation", 0.0), // ✨ 추가
+            averageCadence = intent.getIntExtra("avgCadence", 0),
+            totalElevation = intent.getDoubleExtra("totalElevation", 0.0),
             splitsJson = intent.getStringExtra("splitsJson") ?: "[]",
             routeJson = intent.getStringExtra("routeJson") ?: "[]"
         )
@@ -207,17 +213,39 @@ class RunningActivity : AppCompatActivity(), OnMapReadyCallback {
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
             mMap.isMyLocationEnabled = true
 
-            // ✨ 다이어트하다 날려먹은 코드 복구: 지도 켜자마자 내 위치로 카메라 휙!
-            com.google.android.gms.location.LocationServices.getFusedLocationProviderClient(this).lastLocation.addOnSuccessListener { location ->
-                if (location != null) {
-                    val currentLatLng = LatLng(location.latitude, location.longitude)
-                    mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(currentLatLng, 16f))
+            // ✨ 2. 코스 데이터가 있다면 지도에 궤적 그리기
+            coursePath?.let { pathNodes ->
+                val polylineOptions = PolylineOptions()
+                    .color(Color.parseColor("#FF6B35")) // 주황색 궤적
+                    .width(15f)
+                    .geodesic(true)
+
+                val boundsBuilder = LatLngBounds.Builder()
+                for (node in pathNodes) {
+                    val latLng = LatLng(node.lat, node.lng)
+                    polylineOptions.add(latLng)
+                    boundsBuilder.include(latLng)
+                }
+
+                mMap.addPolyline(polylineOptions)
+
+                // 생성된 코스가 모두 보이도록 화면 줌 이동
+                val padding = 150
+                mMap.moveCamera(CameraUpdateFactory.newLatLngBounds(boundsBuilder.build(), padding))
+
+            } ?: run {
+                // ✨ 3. 코스 없이 들어온 경우 기존처럼 내 위치로 포커스
+                com.google.android.gms.location.LocationServices.getFusedLocationProviderClient(this).lastLocation.addOnSuccessListener { location ->
+                    if (location != null) {
+                        val currentLatLng = LatLng(location.latitude, location.longitude)
+                        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(currentLatLng, 16f))
+                    }
                 }
             }
         }
     }
+
     private fun checkPermissions() {
-        // ✨ 노란색 SDK_INT 경고 싹 제거! (프로젝트 설정이 이미 최신이므로 조건문 필요 없음)
         val permissions = arrayOf(
             Manifest.permission.ACCESS_FINE_LOCATION,
             Manifest.permission.ACCESS_COARSE_LOCATION,
@@ -234,13 +262,11 @@ class RunningActivity : AppCompatActivity(), OnMapReadyCallback {
             addAction("WATCH_READY_ACTION")
             addAction(RunningService.RUN_FINISHED_ACTION)
         }
-        // ✨ 안드로이드 14 보안 정책에 맞게 단일 코드로 깔끔하게 변경 (에러 해결!)
         registerReceiver(serviceReceiver, filter, Context.RECEIVER_NOT_EXPORTED)
     }
 
     override fun onPause() {
         super.onPause()
-        // 앱이 화면에서 사라져도 Receiver 연결만 끊을 뿐, 뒤에 있는 RunningService는 쌩쌩하게 돌아갑니다!
         unregisterReceiver(serviceReceiver)
     }
 }

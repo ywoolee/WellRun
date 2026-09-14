@@ -11,6 +11,7 @@ import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
 import android.os.IBinder
+import android.os.SystemClock
 import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.health.services.client.HealthServices
@@ -27,11 +28,10 @@ import com.google.android.gms.wearable.PutDataMapRequest
 import com.google.android.gms.wearable.Wearable
 import kotlinx.coroutines.*
 import kotlinx.coroutines.tasks.await
-import java.util.ArrayDeque
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.IntentFilter
-import android.os.PowerManager // ✨ WakeLock을 위한 PowerManager 임포트
+import android.os.PowerManager
 
 class HeartRateService : Service() {
     private var isPaused = false
@@ -47,12 +47,13 @@ class HeartRateService : Service() {
     private val cadenceListForMobile = mutableListOf<Int>()
     private val cadenceListForUi = mutableListOf<Int>()
 
+    // 누적 만보기용 변수
     private var sensorManager: SensorManager? = null
-    private var stepDetectorSensor: Sensor? = null
-    private val stepTimestamps = ArrayDeque<Long>()
-    private val cadenceWindowMs = 8000L
+    private var stepCounterSensor: Sensor? = null
+    private var lastTotalSteps = -1f
+    private var lastStepTimestamp = 0L
 
-    // ✨ 워치 수면 방지를 위한 WakeLock 변수
+    // 워치 수면 방지를 위한 WakeLock 변수
     private var wakeLock: PowerManager.WakeLock? = null
 
     private val pauseResumeReceiver = object : BroadcastReceiver() {
@@ -64,30 +65,33 @@ class HeartRateService : Service() {
         }
     }
 
+    // 누적 걸음수(TYPE_STEP_COUNTER) 방식을 적용한 리스너
     private val stepListener = object : SensorEventListener {
         override fun onSensorChanged(event: SensorEvent) {
-            val now = event.timestamp / 1_000_000L
+            val currentTotalSteps = event.values[0]
+            val now = SystemClock.elapsedRealtime()
 
-            synchronized(stepTimestamps) {
-                stepTimestamps.addLast(now)
+            if (lastTotalSteps < 0) {
+                lastTotalSteps = currentTotalSteps
+                lastStepTimestamp = now
+                return
+            }
 
-                while (stepTimestamps.isNotEmpty() && now - stepTimestamps.peekFirst() > cadenceWindowMs) {
-                    stepTimestamps.removeFirst()
+            val deltaSteps = currentTotalSteps - lastTotalSteps
+            val elapsedMs = now - lastStepTimestamp
+
+            // ✨ 정확히 5초(5000ms) 이상 간격이 벌어졌을 때만 케이던스를 계산하여 데이터 튐 완벽 방어
+            if (elapsedMs >= 5000L) {
+                val cadence = (deltaSteps * 60000L / elapsedMs).toInt()
+
+                if (cadence in 40..300) {
+                    synchronized(cadenceListForMobile) { cadenceListForMobile.add(cadence) }
+                    synchronized(cadenceListForUi) { cadenceListForUi.add(cadence) }
                 }
 
-                if (stepTimestamps.size >= 2) {
-                    val elapsedMs = now - stepTimestamps.peekFirst()
-
-                    if (elapsedMs > 2000L) {
-                        // ✨ 걸음 '간격'을 계산하기 위해 size - 1 로 수정
-                        val cadence = ((stepTimestamps.size - 1) * 60_000L / elapsedMs).toInt()
-
-                        if (cadence in 40..300) {
-                            synchronized(cadenceListForUi) { cadenceListForUi.add(cadence) }
-                            synchronized(cadenceListForMobile) { cadenceListForMobile.add(cadence) }
-                        }
-                    }
-                }
+                // 다음 구간 계산을 위해 현재 상태 업데이트
+                lastTotalSteps = currentTotalSteps
+                lastStepTimestamp = now
             }
         }
         override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {}
@@ -97,25 +101,26 @@ class HeartRateService : Service() {
         val sm = getSystemService(SensorManager::class.java)
         if (sm == null) return
         sensorManager = sm
-        val sensor = sm.getDefaultSensor(Sensor.TYPE_STEP_DETECTOR)
+
+        val sensor = sm.getDefaultSensor(Sensor.TYPE_STEP_COUNTER)
         if (sensor == null) return
-        stepDetectorSensor = sensor
+        stepCounterSensor = sensor
         sm.registerListener(stepListener, sensor, SensorManager.SENSOR_DELAY_NORMAL)
     }
 
     private fun stopCadenceSensor() {
         sensorManager?.unregisterListener(stepListener)
-        synchronized(stepTimestamps) { stepTimestamps.clear() }
+        lastTotalSteps = -1f
     }
 
     private fun startCadenceUiTimer() {
         serviceScope.launch {
             while (isActive) {
-                delay(3000)
+                // ✨ UI 갱신 주기도 폰 전송 주기와 완벽히 동일하게 5초(5000ms)로 통일
+                delay(5000)
                 var currentCadence = 0
                 synchronized(cadenceListForUi) {
                     if (cadenceListForUi.isNotEmpty()) {
-                        // ✨ 화면 UI에는 평균 대신 가장 최근 측정된 값 표시
                         currentCadence = cadenceListForUi.last()
                         cadenceListForUi.clear()
                     }
@@ -158,7 +163,6 @@ class HeartRateService : Service() {
     override fun onCreate() {
         super.onCreate()
 
-        // ✨ WakeLock 획득: 화면이 꺼져도 CPU가 멈추지 않고 걸음 수를 계속 셉니다!
         val powerManager = getSystemService(PowerManager::class.java)
         wakeLock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "WellRun:CadenceWakeLock")
         wakeLock?.acquire()
@@ -172,6 +176,7 @@ class HeartRateService : Service() {
         }
         LocalBroadcastManager.getInstance(this).registerReceiver(pauseResumeReceiver, filter)
 
+        // ✨ 폰으로 데이터를 보내는 주기도 기본 5초(5000ms)로 동작 중
         startAverageTimer()
         startCadenceSensor()
         startCadenceUiTimer()
@@ -186,7 +191,6 @@ class HeartRateService : Service() {
 
                 synchronized(bpmList) {
                     if (bpmList.isNotEmpty()) {
-                        // ✨ 평균(average)이 아니라 가장 최신 데이터(last) 추출
                         latestBpm = bpmList.last()
                         bpmList.clear()
                     }
@@ -194,7 +198,6 @@ class HeartRateService : Service() {
 
                 synchronized(cadenceListForMobile) {
                     if (cadenceListForMobile.isNotEmpty()) {
-                        // ✨ 평균(average)이 아니라 가장 최신 데이터(last) 추출
                         latestCadence = cadenceListForMobile.last()
                         cadenceListForMobile.clear()
                     }
@@ -202,7 +205,6 @@ class HeartRateService : Service() {
 
                 if (latestBpm > 0 || latestCadence > 0) {
                     if (!isPaused) {
-                        // ✨ 이제 폰으로는 가장 싱싱한 최신값(latest)이 날아갑니다.
                         sendDataToMobile(latestBpm, latestCadence)
                     }
                     updateNotification("BPM: $latestBpm | 케이던스: $latestCadence")
@@ -286,7 +288,6 @@ class HeartRateService : Service() {
     override fun onDestroy() {
         super.onDestroy()
 
-        // ✨ 서비스가 끝날 때 반드시 락을 풀어주어 배터리 소모를 막습니다.
         wakeLock?.release()
 
         measureClient.unregisterMeasureCallbackAsync(DataType.HEART_RATE_BPM, measureCallback)
