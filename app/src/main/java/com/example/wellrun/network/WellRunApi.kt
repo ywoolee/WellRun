@@ -6,9 +6,10 @@ import retrofit2.Call
 import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.POST
+import retrofit2.http.PUT
+import retrofit2.http.Path
 import retrofit2.http.Query
 
-// ✨ 서버의 JSON 응답을 받을 데이터 클래스들
 data class RouteNode(
     val lat: Double,
     val lng: Double,
@@ -19,7 +20,7 @@ data class CourseResponse(
     val status: String,
     val message: String?,
     val metrics: Map<String, Any>?,
-    val path: List<RouteNode>? // 핵심: A* 알고리즘이 찾은 징검다리 배열
+    val path: List<RouteNode>?
 )
 
 interface WellRunApi {
@@ -32,7 +33,18 @@ interface WellRunApi {
     @POST("/api/running/record")
     fun saveRunningRecord(@Body record: RunningRecord): Call<String>
 
-    // ✨ 러닝 코스 생성 GET 요청 API 추가 (파라미터 2개 추가)
+    // 내 러닝 기록 리스트 조회
+    @GET("/api/running/history/{userId}")
+    fun getRunningHistory(@Path("userId") userId: String): Call<List<RunningRecord>>
+
+    // 내 유저 프로필 조회
+    @GET("/api/users/{email}")
+    fun getUserProfile(@Path("email") email: String): Call<User>
+
+    // ✨ [신규 추가] 내 유저 프로필 수정
+    @PUT("/api/users/{email}")
+    fun updateUserProfile(@Path("email") email: String, @Body user: User): Call<User>
+
     @GET("/api/course/generate-course")
     fun generateCourse(
         @Query("startLat") startLat: Double,

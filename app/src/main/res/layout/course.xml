@@ -190,7 +190,17 @@
                             android:orientation="vertical"
                             android:paddingVertical="16dp">
                             <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="🏃" android:textSize="22sp" android:layout_marginBottom="4dp"/>
-                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="평지" android:textColor="#FF6B35" android:textSize="14sp" android:textStyle="bold"/>
+
+                            <!-- ✨ 여기에 ID(tv_slope_flat)를 추가했습니다! -->
+                            <TextView
+                                android:id="@+id/tv_slope_flat"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="평지"
+                                android:textColor="#FF6B35"
+                                android:textSize="14sp"
+                                android:textStyle="bold"/>
+
                             <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="평탄한 코스" android:textColor="#555555" android:textSize="12sp" />
                         </LinearLayout>
 
@@ -206,7 +216,17 @@
                             android:orientation="vertical"
                             android:paddingVertical="16dp">
                             <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="⛰️" android:textSize="22sp" android:layout_marginBottom="4dp"/>
-                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="있음" android:textColor="#AAAAAA" android:textSize="14sp" android:textStyle="bold"/>
+
+                            <!-- ✨ 여기에 ID(tv_slope_hilly)를 추가했습니다! -->
+                            <TextView
+                                android:id="@+id/tv_slope_hilly"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="있음"
+                                android:textColor="#AAAAAA"
+                                android:textSize="14sp"
+                                android:textStyle="bold"/>
+
                             <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="오르막 포함" android:textColor="#555555" android:textSize="12sp" />
                         </LinearLayout>
                     </LinearLayout>
