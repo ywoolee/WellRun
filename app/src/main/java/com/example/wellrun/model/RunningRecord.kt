@@ -9,10 +9,11 @@ data class RunningRecord(
     @SerializedName("durationSeconds") val durationSeconds: Int,
     @SerializedName("averagePace") val averagePace: String,
     @SerializedName("averageHeartRate") val averageHeartRate: Int,
-    @SerializedName("totalElevation")val totalElevation: Double,
-    @SerializedName("averageCadence")val averageCadence: Int,
-
-    // 리스트 형태의 데이터들은 통신 효율을 위해 JSON String으로 변환해서 담습니다.
+    @SerializedName("totalElevation") val totalElevation: Double,
+    @SerializedName("averageCadence") val averageCadence: Int,
     @SerializedName("splitsJson") val splitsJson: String,
-    @SerializedName("routeJson") val routeJson: String
+    @SerializedName("routeJson") val routeJson: String,
+
+    // ✨ 서버 DB의 생성 날짜(예: "2026-10-25T14:30:00")를 받기 위해 추가!
+    @SerializedName("createdAt") val createdAt: String? = null
 )

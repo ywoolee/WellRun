@@ -50,6 +50,8 @@ class CourseActivity : AppCompatActivity() {
         // ✨ 1. 경사도 버튼과 거리 입력창 View 가져오기
         val btnSlopeFlat = findViewById<LinearLayout>(R.id.btn_slope_flat)
         val btnSlopeHilly = findViewById<LinearLayout>(R.id.btn_slope_hilly)
+        val tvSlopeFlat = findViewById<TextView>(R.id.tv_slope_flat)
+        val tvSlopeHilly = findViewById<TextView>(R.id.tv_slope_hilly)
         val etTargetDistance = findViewById<EditText>(R.id.et_target_distance)
 
         val adapter = TmapAutoCompleteAdapter(this, TMAP_APP_KEY)
@@ -59,18 +61,26 @@ class CourseActivity : AppCompatActivity() {
         // ✨ 2. 현재 선택된 경사도 상태를 저장할 변수 (기본값: 평지)
         var isFlatSelected = true
 
-        // ✨ 3. '평지' 버튼 클릭 이벤트
+// ✨ 3. '평지' 버튼 클릭 이벤트 (글자 색상 변경 추가)
         btnSlopeFlat.setOnClickListener {
             isFlatSelected = true
             btnSlopeFlat.setBackgroundResource(R.drawable.bg_toggle_selected)
             btnSlopeHilly.setBackgroundResource(R.drawable.bg_toggle_unselected)
+
+            // 글자색 변경: 평지를 주황색으로, 있음을 회색으로
+            tvSlopeFlat.setTextColor(android.graphics.Color.parseColor("#FF6B35"))
+            tvSlopeHilly.setTextColor(android.graphics.Color.parseColor("#AAAAAA"))
         }
 
-        // ✨ 4. '오르막 포함' 버튼 클릭 이벤트
+// ✨ 4. '오르막 포함' 버튼 클릭 이벤트 (글자 색상 변경 추가)
         btnSlopeHilly.setOnClickListener {
             isFlatSelected = false
             btnSlopeFlat.setBackgroundResource(R.drawable.bg_toggle_unselected)
             btnSlopeHilly.setBackgroundResource(R.drawable.bg_toggle_selected)
+
+            // 글자색 변경: 있음을 주황색으로, 평지를 회색으로
+            tvSlopeFlat.setTextColor(android.graphics.Color.parseColor("#AAAAAA"))
+            tvSlopeHilly.setTextColor(android.graphics.Color.parseColor("#FF6B35"))
         }
 
         generateBtn.setOnClickListener {

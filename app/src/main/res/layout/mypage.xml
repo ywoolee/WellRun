@@ -25,8 +25,8 @@
                 android:background="#111111"
                 android:orientation="vertical"
                 android:paddingHorizontal="20dp"
-                android:paddingTop="48dp"
-                android:paddingBottom="24dp">
+                android:paddingTop="44dp"
+                android:paddingBottom="18dp">
 
                 <!-- 프로필 정보 및 설정 버튼 -->
                 <RelativeLayout
@@ -39,18 +39,19 @@
                         android:gravity="center_vertical"
                         android:orientation="horizontal">
 
-                        <!-- 프로필 아바타 (주황색 그라데이션) -->
+                        <!-- 프로필 아바타 -->
                         <FrameLayout
-                            android:layout_width="56dp"
-                            android:layout_height="56dp"
+                            android:layout_width="52dp"
+                            android:layout_height="52dp"
                             android:background="@drawable/bg_circle_gradient">
                             <TextView
+                                android:id="@+id/tv_profile_initial"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:layout_gravity="center"
-                                android:text="이"
+                                android:text="웰"
                                 android:textColor="#FFFFFF"
-                                android:textSize="20sp"
+                                android:textSize="19sp"
                                 android:textStyle="bold" />
                         </FrameLayout>
 
@@ -60,17 +61,19 @@
                             android:layout_marginStart="12dp"
                             android:orientation="vertical">
                             <TextView
+                                android:id="@+id/tv_profile_name"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="이대형 님"
+                                android:text="러너 님"
                                 android:textColor="#FFFFFF"
                                 android:textSize="18sp"
                                 android:textStyle="bold" />
                             <TextView
+                                android:id="@+id/tv_profile_sub"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:layout_marginTop="2dp"
-                                android:text="Marathon • 7개월째 러닝 중"
+                                android:text="기록을 불러오는 중..."
                                 android:textColor="#666666"
                                 android:textSize="12sp" />
                         </LinearLayout>
@@ -95,7 +98,7 @@
                             android:layout_height="14dp"
                             android:src="@android:drawable/ic_menu_manage"
                             app:tint="#888888"
-                            android:contentDescription="정보수정 아이콘" /> <!-- 노란 줄(경고) 방지용 설명 추가 -->
+                            android:contentDescription="정보수정 아이콘" />
 
                         <TextView
                             android:layout_width="wrap_content"
@@ -107,52 +110,138 @@
                     </LinearLayout>
                 </RelativeLayout>
 
-                <!-- 요약 통계 3칸 그리드 -->
+                <!-- ✨ 요약 통계 2x2 (세로 폭을 줄여 슬림하게 개선) -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="20dp"
-                    android:orientation="horizontal"
-                    android:weightSum="3">
+                    android:layout_marginTop="16dp"
+                    android:orientation="vertical">
 
+                    <!-- 1열: 총 거리 & 러닝 횟수 -->
                     <LinearLayout
-                        android:layout_width="0dp"
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginEnd="6dp"
-                        android:layout_weight="1"
-                        android:background="@drawable/bg_card_dark"
-                        android:gravity="center"
-                        android:orientation="vertical"
-                        android:padding="12dp">
-                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="총 거리" android:textColor="#555555" android:textSize="12sp" android:layout_marginBottom="4dp"/>
-                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="216km" android:textColor="#FF6B35" android:textSize="16sp" android:textStyle="bold"/>
+                        android:orientation="horizontal"
+                        android:weightSum="2">
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginEnd="5dp"
+                            android:layout_weight="1"
+                            android:background="@drawable/bg_card_dark"
+                            android:gravity="center"
+                            android:orientation="vertical"
+                            android:paddingVertical="9dp"
+                            android:paddingHorizontal="12dp">
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginBottom="2dp"
+                                android:text="총 거리"
+                                android:textColor="#666666"
+                                android:textSize="11sp" />
+                            <TextView
+                                android:id="@+id/tv_total_distance"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="0.0km"
+                                android:textColor="#FF6B35"
+                                android:textSize="15sp"
+                                android:textStyle="bold" />
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="5dp"
+                            android:layout_weight="1"
+                            android:background="@drawable/bg_card_dark"
+                            android:gravity="center"
+                            android:orientation="vertical"
+                            android:paddingVertical="9dp"
+                            android:paddingHorizontal="12dp">
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginBottom="2dp"
+                                android:text="러닝 횟수"
+                                android:textColor="#666666"
+                                android:textSize="11sp" />
+                            <TextView
+                                android:id="@+id/tv_total_count"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="0회"
+                                android:textColor="#FFFFFF"
+                                android:textSize="15sp"
+                                android:textStyle="bold" />
+                        </LinearLayout>
                     </LinearLayout>
 
+                    <!-- 2열: 총 러닝 시간 & 누적 고도 -->
                     <LinearLayout
-                        android:layout_width="0dp"
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginHorizontal="3dp"
-                        android:layout_weight="1"
-                        android:background="@drawable/bg_card_dark"
-                        android:gravity="center"
-                        android:orientation="vertical"
-                        android:padding="12dp">
-                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="러닝 횟수" android:textColor="#555555" android:textSize="12sp" android:layout_marginBottom="4dp"/>
-                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="42회" android:textColor="#FFFFFF" android:textSize="16sp" android:textStyle="bold"/>
+                        android:layout_marginTop="8dp"
+                        android:orientation="horizontal"
+                        android:weightSum="2">
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginEnd="5dp"
+                            android:layout_weight="1"
+                            android:background="@drawable/bg_card_dark"
+                            android:gravity="center"
+                            android:orientation="vertical"
+                            android:paddingVertical="9dp"
+                            android:paddingHorizontal="12dp">
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginBottom="2dp"
+                                android:text="총 러닝 시간"
+                                android:textColor="#666666"
+                                android:textSize="11sp" />
+                            <TextView
+                                android:id="@+id/tv_total_time"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="0분"
+                                android:textColor="#FFFFFF"
+                                android:textSize="15sp"
+                                android:textStyle="bold" />
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="5dp"
+                            android:layout_weight="1"
+                            android:background="@drawable/bg_card_dark"
+                            android:gravity="center"
+                            android:orientation="vertical"
+                            android:paddingVertical="9dp"
+                            android:paddingHorizontal="12dp">
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginBottom="2dp"
+                                android:text="누적 고도"
+                                android:textColor="#666666"
+                                android:textSize="11sp" />
+                            <TextView
+                                android:id="@+id/tv_total_elevation"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="+0m"
+                                android:textColor="#FF6B35"
+                                android:textSize="15sp"
+                                android:textStyle="bold" />
+                        </LinearLayout>
                     </LinearLayout>
 
-                    <LinearLayout
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="6dp"
-                        android:layout_weight="1"
-                        android:background="@drawable/bg_card_dark"
-                        android:gravity="center"
-                        android:orientation="vertical"
-                        android:padding="12dp">
-                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="최고 페이스" android:textColor="#555555" android:textSize="12sp" android:layout_marginBottom="4dp"/>
-                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="5:12" android:textColor="#FFFFFF" android:textSize="16sp" android:textStyle="bold"/>
-                    </LinearLayout>
                 </LinearLayout>
             </LinearLayout>
 
@@ -165,7 +254,59 @@
                 android:orientation="vertical"
                 android:padding="20dp">
 
-                <!-- 월별 러닝거리 (Bar Chart) -->
+                <!-- ✨ 차트 외부 상단으로 독립 및 간격을 넓힌 [최근 4주] / [최근 4개월] 토글 바 -->
+                <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="14dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_centerVertical="true"
+                        android:text="기간별 리포트"
+                        android:textColor="#888888"
+                        android:textSize="13sp"
+                        android:textStyle="bold" />
+
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentEnd="true"
+                        android:layout_centerVertical="true"
+                        android:orientation="horizontal">
+
+                        <TextView
+                            android:id="@+id/btn_toggle_weekly"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:background="@drawable/bg_toggle_selected"
+                            android:paddingHorizontal="14dp"
+                            android:paddingVertical="6dp"
+                            android:text="최근 4주"
+                            android:textColor="#FF6B35"
+                            android:textSize="12sp"
+                            android:textStyle="bold"
+                            android:clickable="true"
+                            android:focusable="true" />
+
+                        <TextView
+                            android:id="@+id/btn_toggle_monthly"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="12dp"
+                            android:background="@drawable/bg_btn_settings"
+                            android:paddingHorizontal="14dp"
+                            android:paddingVertical="6dp"
+                            android:text="최근 4개월"
+                            android:textColor="#888888"
+                            android:textSize="12sp"
+                            android:clickable="true"
+                            android:focusable="true" />
+                    </LinearLayout>
+                </RelativeLayout>
+
+                <!-- 주간/월간 러닝거리 (Bar Chart) -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -175,31 +316,23 @@
                     android:padding="20dp">
 
                     <TextView
+                        android:id="@+id/tv_distance_chart_title"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginBottom="16dp"
-                        android:text="월별 러닝거리"
+                        android:text="최근 4주 러닝거리"
                         android:textColor="#FFFFFF"
                         android:textSize="14sp"
                         android:textStyle="bold" />
 
-                    <!-- MPAndroidChart의 BarChart가 들어갈 자리 -->
                     <FrameLayout
                         android:id="@+id/bar_chart_container"
                         android:layout_width="match_parent"
-                        android:layout_height="140dp"
-                        android:background="@drawable/bg_chart_placeholder">
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_gravity="center"
-                            android:text="막대 그래프 (BarChart) 영역"
-                            android:textColor="#555555"
-                            android:textSize="12sp" />
-                    </FrameLayout>
+                        android:layout_height="160dp"
+                        android:background="@drawable/bg_chart_placeholder" />
                 </LinearLayout>
 
-                <!-- 심박수 (Line Chart) -->
+                <!-- 심박수 추이 (Line Chart) - 우측 뱃지 제거 및 상단 카드와 동일한 텍스트 타이틀 적용 -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -207,48 +340,21 @@
                     android:orientation="vertical"
                     android:padding="20dp">
 
-                    <RelativeLayout
-                        android:layout_width="match_parent"
+                    <TextView
+                        android:id="@+id/tv_hr_chart_title"
+                        android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginBottom="16dp">
+                        android:layout_marginBottom="16dp"
+                        android:text="최근 4주 평균 심박수"
+                        android:textColor="#FFFFFF"
+                        android:textSize="14sp"
+                        android:textStyle="bold" />
 
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_centerVertical="true"
-                            android:text="심박수"
-                            android:textColor="#FFFFFF"
-                            android:textSize="14sp"
-                            android:textStyle="bold" />
-
-                        <!-- 최근 러닝 뱃지 -->
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_alignParentEnd="true"
-                            android:layout_centerVertical="true"
-                            android:background="@drawable/bg_toggle_selected"
-                            android:paddingHorizontal="10dp"
-                            android:paddingVertical="4dp"
-                            android:text="최근 러닝"
-                            android:textColor="#FF6B35"
-                            android:textSize="11sp" />
-                    </RelativeLayout>
-
-                    <!-- MPAndroidChart의 LineChart가 들어갈 자리 -->
                     <FrameLayout
                         android:id="@+id/line_chart_container"
                         android:layout_width="match_parent"
-                        android:layout_height="120dp"
-                        android:background="@drawable/bg_chart_placeholder">
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_gravity="center"
-                            android:text="꺾은선 그래프 (LineChart) 영역"
-                            android:textColor="#555555"
-                            android:textSize="12sp" />
-                    </FrameLayout>
+                        android:layout_height="140dp"
+                        android:background="@drawable/bg_chart_placeholder" />
                 </LinearLayout>
 
             </LinearLayout>
@@ -273,7 +379,6 @@
             android:weightSum="4"
             android:gravity="center_vertical">
 
-            <!-- 1. 캘린더 탭 -->
             <TextView
                 android:id="@+id/mypage_nav_calendar"
                 android:layout_width="0dp"
@@ -287,7 +392,6 @@
                 android:focusable="true"
                 android:background="?attr/selectableItemBackground" />
 
-            <!-- 2. 러닝 탭 -->
             <TextView
                 android:id="@+id/mypage_nav_running"
                 android:layout_width="0dp"
@@ -301,7 +405,6 @@
                 android:focusable="true"
                 android:background="?attr/selectableItemBackground" />
 
-            <!-- 3. 코스 탭 -->
             <TextView
                 android:id="@+id/mypage_nav_course"
                 android:layout_width="0dp"
@@ -315,7 +418,6 @@
                 android:focusable="true"
                 android:background="?attr/selectableItemBackground" />
 
-            <!-- 4. 마이페이지 탭 (활성화 상태) -->
             <TextView
                 android:id="@+id/mypage_nav_mypage"
                 android:layout_width="0dp"
